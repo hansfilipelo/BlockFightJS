@@ -11,10 +11,10 @@ export class IShape {
     this.current_rotation_ = ROTATION.VERTICAL;
 
     this.stones_ = [
-      new Stone(5, 0, this.board_),
-      new Stone(5, 1, this.board_),
-      new Stone(5, 2, this.board_),
-      new Stone(5, 3, this.board_),
+      new Stone(5, -4, this.board_),
+      new Stone(5, -3, this.board_),
+      new Stone(5, -2, this.board_),
+      new Stone(5, -1, this.board_),
     ];
   }
 
@@ -30,9 +30,10 @@ export class IShape {
         }
       };
     }
-    this.stones_.forEach(stone => {
-      stone.move(0, 1);
-    });
+
+    for (let i = 3; i >= 0; --i) {
+      this.stones_[i].move(0, 1);
+    }
     return true;
   }
 
@@ -64,16 +65,17 @@ export class IShape {
         if (!stone.canMove(-1, 0)) {
           return false;
         }
-      };
+      }
     } else if (this.current_rotation_ === ROTATION.HORIZONTAL) {
       if (!this.stones_[3].canMove(-1, 0)) {
         return false;
       }
     }
 
-    this.stones_.forEach(stone => {
-      stone.move(-1, 0);
-    });
+    for (let i = 3; i >= 0; --i) {
+      this.stones_[i].move(-1, 0);
+    }
+
     return true;
   }
 
@@ -90,9 +92,9 @@ export class IShape {
       }
     }
 
-    this.stones_.forEach(stone => {
-      stone.move(1, 0);
-    });
+    for (let i = 0; i < this.stones_.length; ++i) {
+      this.stones_[i].move(1, 0);
+    }
     return true;
   }
 };
