@@ -74,6 +74,8 @@ export class Board {
         new_x_pos >= 0 && new_x_pos < this.width() &&
         new_y_pos >= -4 && new_y_pos < this.height());
 
+    console.assert(!this.hasStone(new_x_pos, new_y_pos));
+
     this.stones_[this.getIndex(new_x_pos, new_y_pos)] =
         this.stones_[this.getIndex(x_pos, y_pos)];
     this.stones_[this.getIndex(x_pos, y_pos)] = null;
