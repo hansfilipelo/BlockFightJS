@@ -1,5 +1,7 @@
 import kaplay from "./third_party/kaplay/kaboom.mjs"
 import { IShape } from "./i_shape.mjs"
+import { Board } from "./board.mjs"
+import { BOARD_HEIGHT, BOARD_WIDTH } from "./game_state.mjs"
 
 let down_pressed = false;
 let up_pressed = false;
@@ -8,7 +10,8 @@ let right_pressed = false;
 
 export function run() {
   kaplay();
-  let current_shape = new IShape();
+  let board = new Board(BOARD_WIDTH, BOARD_HEIGHT, window);
+  let current_shape = new IShape(board);
 
   onKeyDown("down", () => {
     if (!down_pressed) {
@@ -20,7 +23,7 @@ export function run() {
   onKeyRelease("down", () => {
     down_pressed = false;
   });
-  
+
   onKeyDown("up", () => {
     if (!up_pressed) {
       up_pressed = true;
@@ -53,8 +56,10 @@ export function run() {
   onKeyRelease("up", () => {
     up_pressed = false;
   });
-  
+
   onKeyDown("space", () => {
-    current_shape.drop();
+    while (current_shape.drop()) {}
   });
+
+  return { board, current_shape };
 }

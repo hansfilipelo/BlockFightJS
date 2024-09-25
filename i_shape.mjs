@@ -1,50 +1,98 @@
-import { STONE_SIZE } from "./game_state.mjs"
 import { Stone } from "./stone.mjs"
 
 const ROTATION = Object.freeze({
-  VERTICAL: 0, 
+  VERTICAL: 0,
   HORIZONTAL: 1,
 });
 
 export class IShape {
-  current_rotation_ = ROTATION.VERTICAL;
+  constructor(board) {
+    this.board_ = board;
+    this.current_rotation_ = ROTATION.VERTICAL;
 
-  stones_ = [
-    new Stone(5, 0),
-    new Stone(5, 1),
-    new Stone(5, 2),
-    new Stone(5, 3),
-  ];
+    this.stones_ = [
+      new Stone(5, 0, this.board_),
+      new Stone(5, 1, this.board_),
+      new Stone(5, 2, this.board_),
+      new Stone(5, 3, this.board_),
+    ];
+  }
 
   drop() {
+    if (this.current_rotation_ === ROTATION.VERTICAL) {
+      if (!this.stones_[3].canMove(0, 1)) {
+        return false;
+      }
+    } else if (this.current_rotation_ === ROTATION.HORIZONTAL) {
+      for (const stone of this.stones_) {
+        if (!stone.canMove(0, 1)) {
+          return false;
+        }
+      };
+    }
     this.stones_.forEach(stone => {
       stone.move(0, 1);
     });
+    return true;
   }
 
   rotate() {
     if (this.current_rotation_ === ROTATION.VERTICAL) {
-      this.stones_[0].move(1, 1);
-      this.stones_[2].move(-1, -1);
-      this.stones_[3].move(-2, -2);
-      this.current_rotation_ = ROTATION.HORIZONTAL;
+      if (this.stones_[0].canMove(1, 1) &&
+          this.stones_[2].canMove(-1, -1) &&
+          this.stones_[3].canMove(-2, -2)) {
+        this.stones_[0].move(1, 1);
+        this.stones_[2].move(-1, -1);
+        this.stones_[3].move(-2, -2);
+        this.current_rotation_ = ROTATION.HORIZONTAL;
+      }
     } else if (this.current_rotation_ === ROTATION.HORIZONTAL) {
-      this.stones_[0].move(-1, -1);
-      this.stones_[2].move(1, 1);
-      this.stones_[3].move(2, 2);
-      this.current_rotation_ = ROTATION.VERTICAL;
+      if (this.stones_[0].canMove(-1, -1) &&
+          this.stones_[2].canMove(1, 1) &&
+          this.stones_[3].canMove(2, 2)) {
+        this.stones_[0].move(-1, -1);
+        this.stones_[2].move(1, 1);
+        this.stones_[3].move(2, 2);
+        this.current_rotation_ = ROTATION.VERTICAL;
+      }
     }
   }
 
   left() {
+    if (this.current_rotation_ === ROTATION.VERTICAL) {
+      for (const stone of this.stones_) {
+        if (!stone.canMove(-1, 0)) {
+          return false;
+        }
+      };
+    } else if (this.current_rotation_ === ROTATION.HORIZONTAL) {
+      if (!this.stones_[3].canMove(-1, 0)) {
+        return false;
+      }
+    }
+
     this.stones_.forEach(stone => {
       stone.move(-1, 0);
     });
+    return true;
   }
 
   right() {
+    if (this.current_rotation_ === ROTATION.VERTICAL) {
+      for (const stone of this.stones_) {
+        if (!stone.canMove(1, 0)) {
+          return false;
+        }
+      }
+    } else if (this.current_rotation_ === ROTATION.HORIZONTAL) {
+      if (!this.stones_[0].canMove(1, 0)) {
+        return false;
+      }
+    }
+
     this.stones_.forEach(stone => {
       stone.move(1, 0);
     });
+    return true;
   }
 };
