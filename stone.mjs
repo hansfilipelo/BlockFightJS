@@ -1,4 +1,3 @@
-import kaplay from "./third_party/kaplay/kaboom.mjs"
 import { OUTLINE_SIZE } from "./game_state.mjs"
 
 export class Stone {
