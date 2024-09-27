@@ -1,4 +1,3 @@
-import kaplay from "./third_party/kaplay/kaboom.mjs"
 import { OUTLINE_SIZE } from "./game_state.mjs"
 
 
@@ -22,14 +21,6 @@ export class Board {
                                           this.board_height_);
     this.x_start_ = this.window_.innerWidth / 2 - (this.board_width_ * this.stone_size_) / 2;
     this.y_start_ = 0;
-
-    this.kaplay_board_ = add([
-      rect(this.board_width_ * this.stone_size_,
-           this.board_height_ * this.stone_size_),
-      pos(this.x_start_, this.y_start_),
-      outline(OUTLINE_SIZE),
-      "board"
-    ]);
   }
 
   width() {
