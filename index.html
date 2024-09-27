@@ -1,6 +1,6 @@
 <script type="module">
   let game = null;
   import('./main.mjs').then(block_fight => {
-    game = block_fight.run();
+    block_fight.run().then(game_out => { game = game_out; });
   });
 </script>
