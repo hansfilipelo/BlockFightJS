@@ -1,6 +1,3 @@
-import { OUTLINE_SIZE } from "./game_state.mjs"
-
-
 function calculateStoneSize(window_width, window_height, board_width, board_height) {
   const width_stones = Math.floor(window_width / board_width);
   const height_stones = Math.floor(window_height / board_height);

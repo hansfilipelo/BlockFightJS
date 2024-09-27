@@ -1,5 +1,3 @@
-import { OUTLINE_SIZE } from "./game_state.mjs"
-
 export class Stone {
   constructor(x_pos, y_pos, board) {
     this.x_pos_ = x_pos;
