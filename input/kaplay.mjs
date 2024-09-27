@@ -1,71 +1,51 @@
 import kaplay from "../third_party/kaplay/kaboom.mjs"
 
 class KaplayInputHandler {
-  constructor(player) {
-    this.player_ = player;
-    this.down_pressed_ = false;
-    this.up_pressed_ = false;
-    this.left_pressed_ = false;
-    this.right_pressed_ = false;
-    this.space_pressed_ = false;
+  constructor(input_interceptor) {
+    this.interceptor_ = input_interceptor;
 
     onKeyDown("down", () => {
-      if (!this.down_pressed_) {
-        this.down_pressed_ = true;
-        this.player_.drop();
-      }
+      this.interceptor_.onDownPressed();
     });
 
     onKeyRelease("down", () => {
-      this.down_pressed_ = false;
+      this.interceptor_.onDownReleased();
     });
 
     onKeyDown("up", () => {
-      if (!this.up_pressed_) {
-        this.up_pressed_ = true;
-        this.player_.rotate();
-      }
+      this.interceptor_.onUpPressed();
     });
 
     onKeyRelease("up", () => {
-      this.up_pressed_ = false;
+      this.interceptor_.onUpReleased();
     });
 
     onKeyDown("left", () => {
-      if (!this.left_pressed_) {
-        this.left_pressed_ = true;
-        this.player_.left();
-      }
+      this.interceptor_.onLeftPressed();
     });
 
     onKeyRelease("left", () => {
-      this.left_pressed_ = false;
+      this.interceptor_.onLeftReleased();
     });
 
     onKeyDown("right", () => {
-      if (!this.right_pressed_) {
-        this.right_pressed_ = true;
-        this.player_.right();
-      }
+      this.interceptor_.onRightPressed();
     });
 
     onKeyRelease("right", () => {
-      this.right_pressed_ = false;
+      this.interceptor_.onRightReleased();
     });
 
     onKeyDown("space", () => {
-      if (!this.space_pressed_) {
-        this.space_pressed_ = true;
-        this.player_.dropAllTheWay();
-      }
+      this.interceptor_.onSpacePressed();
     });
 
     onKeyRelease("space", () => {
-      this.space_pressed_ = false;
+      this.interceptor_.onSpaceReleased();
     });
   }
 }
 
-export default function(player) {
-  return new KaplayInputHandler(player);
+export default function(input_interceptor) {
+  return new KaplayInputHandler(input_interceptor);
 }
