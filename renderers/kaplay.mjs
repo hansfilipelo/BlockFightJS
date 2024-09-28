@@ -1,3 +1,4 @@
+import kaplay from "../third_party/kaplay/kaboom.mjs"
 import { OUTLINE_SIZE } from "../game_state.mjs"
 
 function xPosToScreen(x_pos, board) {
@@ -64,5 +65,10 @@ class KaplayRenderer {
 }
 
 export default function(board) {
+  // Hack to only initialize kaplay once in the entire program when using
+  // kaplay renderer alongside kaplay input (which is required essentially)
+  if (typeof add !== "function") {
+    kaplay();
+  }
   return new KaplayRenderer(board);
 }
