@@ -1,22 +1,38 @@
 import kaplay from "../third_party/kaplay/kaboom.mjs"
 import { OUTLINE_SIZE } from "../game_state.mjs"
 
-function xPosToScreen(x_pos, board) {
-  return board.x_start() + x_pos * board.stone_size();
+function calculateStoneSize(window_width, window_height, board_width, board_height) {
+  const width_stones = Math.floor(window_width / board_width);
+  const height_stones = Math.floor(window_height / board_height);
+  return Math.min(width_stones, height_stones);
 }
 
-function yPosToScreen(y_pos, board) {
-  return board.y_start() + y_pos * board.stone_size();
+function xPosToScreen(x_pos, x_start, stone_size) {
+  return x_start + x_pos * stone_size;
+}
+
+function yPosToScreen(y_pos, y_start, stone_size) {
+  return y_start + y_pos * stone_size;
 }
 
 class KaplayRenderer {
-  constructor(board) {
+  constructor(board, game_canvas) {
     this.board_ = board;
+    this.game_canvas_ = game_canvas;
+
+    this.stone_size_ = calculateStoneSize(this.game_canvas_.offsetWidth,
+                                          this.game_canvas_.offsetHeight,
+                                          this.board_.width(),
+                                          this.board_.height());
+
+    this.x_start_ = this.game_canvas_.offsetWidth / 2 -
+        (this.board_.width() * this.stone_size_) / 2;
+    this.y_start_ = 0;
 
     this.kaplay_board_ = add([
-      rect(this.board_.width() * this.board_.stone_size(),
-                        this.board_.height() * this.board_.stone_size()),
-      pos(this.board_.x_start(), this.board_.y_start()),
+      rect(this.board_.width() * this.stone_size_,
+                        this.board_.height() * this.stone_size_),
+      pos(this.x_start_, this.y_start_),
       outline(OUTLINE_SIZE),
       "board"
     ]);
@@ -26,17 +42,17 @@ class KaplayRenderer {
 
   createStone(x_pos, y_pos) {
     return add([
-      rect(this.board_.stone_size(), this.board_.stone_size()),
-      pos(xPosToScreen(x_pos, this.board_),
-          yPosToScreen(y_pos, this.board_)),
+      rect(this.stone_size_, this.stone_size_),
+      pos(xPosToScreen(x_pos, this.x_start_, this.stone_size_),
+          yPosToScreen(y_pos, this.y_start_, this.stone_size_)),
       outline(OUTLINE_SIZE),
       "stone"
     ]);
   }
 
   updateStone(kaplay_stone, x_pos, y_pos) {
-    kaplay_stone.c("pos").pos.x = xPosToScreen(x_pos, this.board_);
-    kaplay_stone.c("pos").pos.y = yPosToScreen(y_pos, this.board_);
+    kaplay_stone.c("pos").pos.x = xPosToScreen(x_pos, this.x_start_, this.stone_size_);
+    kaplay_stone.c("pos").pos.y = yPosToScreen(y_pos, this.y_start_, this.stone_size_);
   }
 
   draw() {
@@ -64,11 +80,7 @@ class KaplayRenderer {
   }
 }
 
-export default function(board) {
-  // Hack to only initialize kaplay once in the entire program when using
-  // kaplay renderer alongside kaplay input (which is required essentially)
-  if (typeof add !== "function") {
-    kaplay();
-  }
-  return new KaplayRenderer(board);
+export default function(board, game_canvas) {
+  kaplay({canvas: game_canvas});
+  return new KaplayRenderer(board, game_canvas);
 }

@@ -1,6 +1,22 @@
-<script type="module">
-  let game = null;
-  import('./main.mjs').then(block_fight => {
-    block_fight.run().then(game_out => { game = game_out; });
-  });
-</script>
+<!DOCTYPE html>
+<html></html>
+<head>
+  <link rel="stylesheet" href="blockfight.css">
+  <title>Block Fight</title>
+  <script type="module">
+    let game = null;
+    import('./main.mjs').then(block_fight => {
+      block_fight.run(document.getElementById("menu"),
+                      document.getElementById("game_canvas")).then(game_out => {
+                         game = game_out;
+                       });
+    });
+  </script>
+</head>
+<body>
+  <div id="menu"><h1>Block Fight</h1></div>
+  <div id="board">
+    <canvas id="game_canvas"></canvas>
+  </div>
+</body>
+</html>
