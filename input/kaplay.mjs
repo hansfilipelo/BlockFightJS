@@ -47,5 +47,9 @@ class KaplayInputHandler {
 }
 
 export default function(input_interceptor) {
+  if (typeof onKeyDown !== "function") {
+    kaplay();
+  }
+
   return new KaplayInputHandler(input_interceptor);
 }
