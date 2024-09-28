@@ -1,23 +1,8 @@
-function calculateStoneSize(window_width, window_height, board_width, board_height) {
-  const width_stones = Math.floor(window_width / board_width);
-  const height_stones = Math.floor(window_height / board_height);
-  return Math.min(width_stones, height_stones);
-}
-
-
 export class Board {
-  constructor(board_width, board_height, current_window) {
+  constructor(board_width, board_height) {
     this.board_width_ = board_width;
     this.board_height_ = board_height;
     this.stones_ = new Array(board_width * (board_height + 4)).fill(null);
-    this.window_ = current_window;
-
-    this.stone_size_ = calculateStoneSize(this.window_.innerWidth,
-                                          this.window_.innerHeight,
-                                          this.board_width_,
-                                          this.board_height_);
-    this.x_start_ = this.window_.innerWidth / 2 - (this.board_width_ * this.stone_size_) / 2;
-    this.y_start_ = 0;
   }
 
   width() {
@@ -26,10 +11,6 @@ export class Board {
 
   height() {
     return this.board_height_;
-  }
-
-  stone_size() {
-    return this.stone_size_;
   }
 
   x_start() {
