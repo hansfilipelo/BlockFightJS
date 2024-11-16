@@ -1,0 +1,11 @@
+#menu{
+  width:20%;
+  height:100vh;
+  float: left;
+}
+
+#board{
+  width:80%;
+  height:100vh;
+  float: right;
+}
