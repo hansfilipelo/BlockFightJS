@@ -6,15 +6,36 @@
   <script type="module">
     let game = null;
     import('./main.mjs').then(block_fight => {
-      block_fight.run(document.getElementById("menu"),
-                      document.getElementById("game_canvas")).then(game_out => {
-                         game = game_out;
-                       });
+      import('./player_info_controller.mjs').then(player_info_controller => {
+        block_fight.run(
+          new player_info_controller.PlayerInfoController(
+            document.getElementById("menu")),
+          document.getElementById("game_canvas")).then(game_out => {
+              game = game_out;
+        });
+      });
     });
   </script>
 </head>
 <body>
-  <div id="menu"><h1>Block Fight</h1></div>
+  <div id="menu">
+    <div id="player_name">
+    <h1>Block Fight</h1>
+    <label id="player_name_label">
+      Name:
+      <input id="player_name_input" type="text">
+    </label>
+    </div>
+    <div id="score">
+    <label id="score_label">
+      Score:
+      <span id="score_value">0</span>
+    </label>
+    </div>
+    <div id="start_button">
+      <button id="start_button_button">Start</button>
+    </div>
+  </div>
   <div id="board">
     <canvas id="game_canvas"></canvas>
   </div>
