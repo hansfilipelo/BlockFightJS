@@ -20,14 +20,14 @@ export class Player {
   }
 
   reloadTimer() {
+    console.assert(this.is_playing_);
     this.drop_timer_ = setTimeout(this.drop.bind(this),
                                   this.getDropTimerInterval());
   }
 
   start(player_name) {
-    this.is_playing_ = true;
     this.player_name_ = player_name;
-    this.newShape();
+    this.is_playing_ = this.newShape();
     this.reloadTimer();
   }
 
@@ -36,7 +36,13 @@ export class Player {
   }
 
   newShape() {
-    this.current_shape_ = new IShape(this.board_);
+    if (IShape.canCreate(this.board_)) {
+      this.current_shape_ = new IShape(this.board_);
+      return true;
+    }
+
+    console.log("Game over");
+    return false;
   }
 
   drop() {
@@ -45,10 +51,13 @@ export class Player {
     }
 
     if (!this.current_shape_.drop()) {
-      this.newShape();
+      this.is_playing_ = this.newShape();
     }
     this.renderer_.draw();
-    this.reloadTimer();
+
+    if (this.is_playing_) {
+      this.reloadTimer();
+    }
   }
 
   rotate() {
@@ -84,7 +93,7 @@ export class Player {
     }
 
     while (this.current_shape_.drop()) {}
-    this.newShape();
+    this.is_playing_ = this.newShape();
     this.renderer_.draw();
   }
 }

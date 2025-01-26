@@ -18,6 +18,13 @@ export class IShape {
     ];
   }
 
+  static canCreate(board) {
+    return !board.hasStone(5, -4) &&
+           !board.hasStone(5, -3) &&
+           !board.hasStone(5, -2) &&
+           !board.hasStone(5, -1);
+  }
+
   drop() {
     if (this.current_rotation_ === ROTATION.VERTICAL) {
       if (!this.stones_[3].canMove(0, 1)) {
