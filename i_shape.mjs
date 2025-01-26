@@ -25,6 +25,10 @@ export class IShape {
            !board.hasStone(5, -1);
   }
 
+  getRowSpan() {
+    return [this.stones_[0].y_pos_, this.stones_[3].y_pos_];
+  }
+
   drop() {
     if (this.current_rotation_ === ROTATION.VERTICAL) {
       if (!this.stones_[3].canMove(0, 1)) {

@@ -51,6 +51,7 @@ export class Player {
     }
 
     if (!this.current_shape_.drop()) {
+      this.board_.clearFullRows(this.current_shape_.getRowSpan());
       this.is_playing_ = this.newShape();
     }
     this.renderer_.draw();
@@ -93,6 +94,7 @@ export class Player {
     }
 
     while (this.current_shape_.drop()) {}
+    this.board_.clearFullRows(this.current_shape_.getRowSpan());
     this.is_playing_ = this.newShape();
     this.renderer_.draw();
   }
