@@ -50,6 +50,15 @@ export class IShape {
 
   rotate() {
     if (this.current_rotation_ === ROTATION.VERTICAL) {
+      let x_pos = this.stones_[0].x_pos();
+      if (x_pos === 0 || x_pos === 1) {
+        for (let i = 0; i < 2 - x_pos; ++i) {
+          this.right()
+        }
+      } else if (x_pos === this.board_.width() - 1) {
+        this.left();
+      }
+
       if (this.stones_[0].canMove(1, 1) &&
           this.stones_[2].canMove(-1, -1) &&
           this.stones_[3].canMove(-2, -2)) {
@@ -57,6 +66,14 @@ export class IShape {
         this.stones_[2].move(-1, -1);
         this.stones_[3].move(-2, -2);
         this.current_rotation_ = ROTATION.HORIZONTAL;
+      } else {
+        if (x_pos === 0 || x_pos === 1) {
+          for (let i = 0; i < x_pos; ++i) {
+            this.left();
+          }
+        } else if (x_pos === this.board_.width() - 1) {
+          this.right();
+        }
       }
     } else if (this.current_rotation_ === ROTATION.HORIZONTAL) {
       if (this.stones_[0].canMove(-1, -1) &&
