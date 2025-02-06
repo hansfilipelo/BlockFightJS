@@ -1,4 +1,6 @@
 
+const STICKY_KEY_INTERVAL = 250;
+
 class InputInterceptor {
   constructor(player) {
     this.player_ = player;
@@ -32,8 +34,13 @@ class InputInterceptor {
 
   onLeftPressed() {
     if (!this.left_pressed_) {
-      this.left_pressed_ = true;
-        this.player_.left();
+      this.left_pressed_ = Date.now();
+      this.player_.left();
+      return;
+    }
+
+    if (Date.now() - this.left_pressed_ > STICKY_KEY_INTERVAL) {
+      this.player_.left();
     }
   }
 
@@ -43,7 +50,12 @@ class InputInterceptor {
 
   onRightPressed() {
     if (!this.right_pressed_) {
-      this.right_pressed_ = true;
+      this.right_pressed_ = Date.now();
+      this.player_.right();
+      return;
+    }
+
+    if (Date.now() - this.right_pressed_ > STICKY_KEY_INTERVAL) {
       this.player_.right();
     }
   }
