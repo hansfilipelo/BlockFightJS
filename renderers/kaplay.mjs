@@ -16,9 +16,10 @@ function yPosToScreen(y_pos, y_start, stone_size) {
 }
 
 class KaplayRenderer {
-  constructor(board, game_canvas) {
+  constructor(board, game_canvas, is_dark_mode) {
     this.board_ = board;
     this.game_canvas_ = game_canvas;
+    this.is_dark_mode_ = is_dark_mode;
 
     this.stone_size_ = calculateStoneSize(this.game_canvas_.offsetWidth,
                                           this.game_canvas_.offsetHeight,
@@ -108,7 +109,7 @@ class KaplayRenderer {
   }
 }
 
-export default function(board, game_canvas) {
+export default function(board, game_canvas, is_dark_mode) {
   kaplay({canvas: game_canvas});
-  return new KaplayRenderer(board, game_canvas);
+  return new KaplayRenderer(board, game_canvas, is_dark_mode);
 }
