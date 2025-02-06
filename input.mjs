@@ -62,6 +62,17 @@ class InputInterceptor {
   onSpaceReleased() {
     this.space_pressed_ = false;
   }
+
+  onPausePressed() {
+    if (!this.pause_pressed_) {
+      this.pause_pressed_ = true;
+      this.player_.pauseResume();
+    }
+  }
+
+  onPauseReleased() {
+    this.pause_pressed_ = false;
+  }
 }
 
 export async function createInputHandler(player, platform=null) {
