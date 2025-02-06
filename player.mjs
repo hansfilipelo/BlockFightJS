@@ -52,6 +52,7 @@ export class Player {
 
   start(player_name) {
     this.player_name_ = player_name;
+    this.board_.newStones();
     this.is_playing_ = this.newShape();
     this.is_paused_ = false;
 

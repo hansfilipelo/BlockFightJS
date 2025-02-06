@@ -2,7 +2,12 @@ export class Board {
   constructor(board_width, board_height) {
     this.board_width_ = board_width;
     this.board_height_ = board_height;
-    this.stones_ = new Array(board_width * (board_height + 4)).fill(null);
+    this.newStones();
+  }
+
+  newStones() {
+    this.stones_ =
+      new Array(this.board_width_ * (this.board_height_ + 4)).fill(null);
   }
 
   width() {
