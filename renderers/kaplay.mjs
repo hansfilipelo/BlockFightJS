@@ -31,7 +31,7 @@ class KaplayRenderer {
 
     this.kaplay_board_ = add([
       rect(this.board_.width() * this.stone_size_,
-                        this.board_.height() * this.stone_size_),
+           this.board_.height() * this.stone_size_),
       pos(this.x_start_, this.y_start_),
       outline(OUTLINE_SIZE),
       "board"
@@ -53,6 +53,34 @@ class KaplayRenderer {
   updateStone(kaplay_stone, x_pos, y_pos) {
     kaplay_stone.c("pos").pos.x = xPosToScreen(x_pos, this.x_start_, this.stone_size_);
     kaplay_stone.c("pos").pos.y = yPosToScreen(y_pos, this.y_start_, this.stone_size_);
+  }
+
+  onResize() {
+    console.log("onResize");
+    this.stone_size_ = calculateStoneSize(this.game_canvas_.offsetWidth,
+                                          this.game_canvas_.offsetHeight,
+                                          this.board_.width(),
+                                          this.board_.height());
+
+    this.x_start_ = this.game_canvas_.offsetWidth / 2 -
+        (this.board_.width() * this.stone_size_) / 2;
+    this.y_start_ = 0;
+
+    this.kaplay_board_.destroy();
+    this.kaplay_board_ = add([
+      rect(this.board_.width() * this.stone_size_,
+           this.board_.height() * this.stone_size_),
+      pos(this.x_start_, this.y_start_),
+      outline(OUTLINE_SIZE),
+      "board"
+    ]);
+
+    for (let stone of this.stones_) {
+      stone.destroy();
+    }
+    this.stones_.length = 0;
+
+    this.draw();
   }
 
   draw() {

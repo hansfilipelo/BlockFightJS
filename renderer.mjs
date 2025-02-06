@@ -1,15 +1,20 @@
-export async function createRenderer(board, game_canvas, platform=null) {
+export async function createRenderer(board, window, game_canvas, platform=null) {
+  let renderer;
+
   if (!platform) {
-    return await import("./renderers/kaplay.mjs").then(
+    renderer = await import("./renderers/kaplay.mjs").then(
       module => module.default(board, game_canvas));
   }
-
 
   if (platform === "kaplay") {
-    return await import("./renderers/kaplay.mjs").then(
+    renderer = await import("./renderers/kaplay.mjs").then(
       module => module.default(board, game_canvas));
   }
 
+  window.addEventListener("resize", () => {
+    renderer.onResize();
+  });
   // TODO: Implement other input methods.
-  return null;
+
+  return renderer;
 }
