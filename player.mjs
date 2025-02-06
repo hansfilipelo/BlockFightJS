@@ -21,6 +21,7 @@ export class Player {
     this.level_timer_ = null;
     this.player_name_ = null;
     this.is_playing_ = false;
+    this.is_paused_ = false;
 
     this.player_info_controller_ = player_info_controller;
     this.player_info_controller_.setStartGameCallback(
@@ -44,11 +45,35 @@ export class Player {
                                   LEVEL_UP_INTERVAL_SECONDS * 1000);
   }
 
+  clearTimers() {
+    clearTimeout(this.drop_timer_);
+    clearTimeout(this.level_timer_);
+  }
+
   start(player_name) {
     this.player_name_ = player_name;
     this.is_playing_ = this.newShape();
+    this.is_paused_ = false;
+
+    this.level_ = 1;
+    this.score_ = 0;
+
+    this.player_info_controller_.setLevel(this.level_);
+    this.player_info_controller_.setScore(this.score_);
+
     this.reloadTimer();
     this.levelTimer();
+  }
+
+  pauseResume() {
+    if (this.is_paused_) {
+      this.is_paused_ = false;
+      this.reloadTimer();
+      this.levelTimer();
+    } else {
+      this.clearTimers();
+      this.is_paused_ = true;
+    }
   }
 
   getDropTimerInterval() {
@@ -67,6 +92,8 @@ export class Player {
     }
 
     console.log("Game over");
+    this.is_playing_ = false;
+    this.clearTimers();
     return false;
   }
 

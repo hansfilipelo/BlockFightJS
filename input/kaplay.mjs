@@ -43,6 +43,14 @@ class KaplayInputHandler {
     onKeyRelease("space", () => {
       this.interceptor_.onSpaceReleased();
     });
+
+    onKeyDown("p", () => {
+      this.interceptor_.onPausePressed();
+    });
+
+    onKeyRelease("p", () => {
+      this.interceptor_.onPauseReleased();
+    });
   }
 }
 
