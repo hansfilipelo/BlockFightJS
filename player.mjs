@@ -4,13 +4,21 @@ function startCallback(player, name) {
   player.start(name);
 }
 
+const SCORE_PER_ROW = 100;
+const SCORE_PER_DROP = 10;
+const LEVEL_UP_INTERVAL_SECONDS = 30;
+
 export class Player {
   constructor(board, renderer, player_info_controller) {
     this.board_ = board;
     this.renderer_ = renderer;
     this.current_shape_ = null;
-    this.level_ = 0;
+
+    this.level_ = 1;
+    this.score_ = 0;
+
     this.drop_timer_ = null;
+    this.level_timer_ = null;
     this.player_name_ = null;
     this.is_playing_ = false;
 
@@ -25,14 +33,31 @@ export class Player {
                                   this.getDropTimerInterval());
   }
 
+  levelUp() {
+    this.level_++;
+    this.player_info_controller_.setLevel(this.level_);
+    this.levelTimer();
+  }
+
+  levelTimer() {
+    this.level_timer_ = setTimeout(this.levelUp.bind(this),
+                                  LEVEL_UP_INTERVAL_SECONDS * 1000);
+  }
+
   start(player_name) {
     this.player_name_ = player_name;
     this.is_playing_ = this.newShape();
     this.reloadTimer();
+    this.levelTimer();
   }
 
   getDropTimerInterval() {
-    return 450 - this.level_ * 25;
+    return Math.max(500 - (this.level_ - 1) * 25, 100);
+  }
+
+  addScore(base_points) {
+    this.score_ += base_points * this.level_;
+    this.player_info_controller_.setScore(this.score_);
   }
 
   newShape() {
@@ -51,9 +76,12 @@ export class Player {
     }
 
     if (!this.current_shape_.drop()) {
-      this.board_.clearFullRows(this.current_shape_.getRowSpan());
+      this.addScore(SCORE_PER_DROP);
+      this.addScore(this.board_.clearFullRows(
+        this.current_shape_.getRowSpan()) * SCORE_PER_ROW);
       this.is_playing_ = this.newShape();
     }
+
     this.renderer_.draw();
 
     if (this.is_playing_) {
@@ -93,8 +121,12 @@ export class Player {
       return;
     }
 
-    while (this.current_shape_.drop()) {}
-    this.board_.clearFullRows(this.current_shape_.getRowSpan());
+    while (this.current_shape_.drop()) {
+      this.addScore(SCORE_PER_DROP);
+    }
+
+    this.addScore(this.board_.clearFullRows(
+      this.current_shape_.getRowSpan()) * SCORE_PER_ROW);
     this.is_playing_ = this.newShape();
     this.renderer_.draw();
   }

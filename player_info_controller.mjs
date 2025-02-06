@@ -25,6 +25,10 @@ class PlayerInfoController {
     this.menu_div_.querySelector("#score_value").textContent = score;
   }
 
+  setLevel(level) {
+    this.menu_div_.querySelector("#level_value").textContent = level;
+  }
+
   startGame() {
     console.assert(this.start_game_callback_ != null);
     this.start_game_callback_(this.getPlayerName());

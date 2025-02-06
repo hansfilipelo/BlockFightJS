@@ -1,8 +1,8 @@
 import { Board } from "./board.mjs"
 import { BOARD_HEIGHT, BOARD_WIDTH } from "./game_state.mjs"
 import { createInputHandler } from "./input.mjs"
-import { createRenderer } from "./renderer.mjs"
 import { Player } from "./player.mjs"
+import { createRenderer } from "./renderer.mjs"
 
 export async function run(player_info_controller, game_canvas) {
   let board = new Board(BOARD_WIDTH, BOARD_HEIGHT, window);

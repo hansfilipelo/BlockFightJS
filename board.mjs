@@ -87,5 +87,7 @@ export class Board {
       let start_moving_down_from = Math.min.apply(null, rows_to_clear) - 1;
       this.moveAllDown(start_moving_down_from, rows_to_clear.length);
     }
+
+    return rows_to_clear.length;
   }
 }
