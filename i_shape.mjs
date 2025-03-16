@@ -53,7 +53,7 @@ export class IShape {
       let x_pos = this.stones_[0].x_pos();
       if (x_pos === 0 || x_pos === 1) {
         for (let i = 0; i < 2 - x_pos; ++i) {
-          this.right()
+          this.right();
         }
       } else if (x_pos === this.board_.width() - 1) {
         this.left();
@@ -68,7 +68,7 @@ export class IShape {
         this.current_rotation_ = ROTATION.HORIZONTAL;
       } else {
         if (x_pos === 0 || x_pos === 1) {
-          for (let i = 0; i < x_pos; ++i) {
+          for (let i = 0; i < 2 - x_pos; ++i) {
             this.left();
           }
         } else if (x_pos === this.board_.width() - 1) {
