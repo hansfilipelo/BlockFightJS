@@ -26,7 +26,7 @@ export class IShape {
   }
 
   getRowSpan() {
-    return [this.stones_[0].y_pos_, this.stones_[3].y_pos_];
+    return [this.stones_[0].y_pos(), this.stones_[3].y_pos()];
   }
 
   drop() {
