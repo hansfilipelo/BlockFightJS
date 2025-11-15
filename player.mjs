@@ -1,4 +1,4 @@
-import { IShape } from "./i_shape.mjs"
+import { newShape } from "./shapes.mjs"
 
 function startCallback(player, name) {
   player.start(name);
@@ -87,11 +87,11 @@ export class Player {
   }
 
   newShape() {
-    if (IShape.canCreate(this.board_)) {
-      this.current_shape_ = new IShape(this.board_);
+    this.current_shape_ = newShape(this.board_);
+    if (this.current_shape_ !== null) {
       return true;
     }
-
+    console.log("current_shape_", this.current_shape_);
     console.log("Game over");
     this.is_playing_ = false;
     this.clearTimers();
