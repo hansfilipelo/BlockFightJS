@@ -1,4 +1,4 @@
-import { Stone } from "./stone.mjs"
+import { Stone, StoneColor} from "./stone.mjs"
 
 const ROTATION = Object.freeze({
   VERTICAL: 0,
@@ -9,12 +9,13 @@ export class IShape {
   constructor(board) {
     this.board_ = board;
     this.current_rotation_ = ROTATION.VERTICAL;
+    this.color_ = StoneColor.PURPLE;
 
     this.stones_ = [
-      new Stone(5, -4, this.board_),
-      new Stone(5, -3, this.board_),
-      new Stone(5, -2, this.board_),
-      new Stone(5, -1, this.board_),
+      new Stone(5, -4, this.color_, this.board_),
+      new Stone(5, -3, this.color_, this.board_),
+      new Stone(5, -2, this.color_, this.board_),
+      new Stone(5, -1, this.color_, this.board_),
     ];
   }
 
