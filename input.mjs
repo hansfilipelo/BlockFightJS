@@ -12,7 +12,12 @@ class InputInterceptor {
   }
   onDownPressed() {
     if (!this.down_pressed_) {
-      this.down_pressed_ = true;
+      this.down_pressed_ = Date.now();
+      this.player_.drop(false /* reload_timer */);
+      return;
+    }
+
+    if (Date.now() - this.down_pressed_ > STICKY_KEY_INTERVAL) {
       this.player_.drop(false /* reload_timer */);
     }
   }
