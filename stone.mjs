@@ -63,9 +63,27 @@ export class Matrix {
   }
 }
 
+export class Color {
+  constructor(r = 0, g = 0, b = 0) {
+    this.r_ = r;
+    this.g_ = g;
+    this.b_ = b;
+  }
+};
+
+export const StoneColor = Object.freeze({
+  RED: new Color(255, 0, 0),
+  GREEN: new Color(0, 255, 0),
+  BLUE: new Color(0, 0, 255),
+  YELLOW: new Color(255, 255, 0),
+  PURPLE: new Color(128, 0, 128),
+  ORANGE: new Color(255, 165, 0),
+});
+
 export class Stone {
-  constructor(x_pos, y_pos, board) {
+  constructor(x_pos, y_pos, color, board) {
     this.pos_ = new Position(x_pos, y_pos);
+    this.color_ = color;
 
     this.board_ = board;
     this.board_.addStone(this.pos_.x_pos(), this.pos_.y_pos(), this);
@@ -77,6 +95,10 @@ export class Stone {
 
   y_pos() {
     return this.pos_.y_pos();
+  }
+
+  color() {
+    return this.color_;
   }
 
   canMove(x_pos, y_pos) {

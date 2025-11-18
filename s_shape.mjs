@@ -1,4 +1,4 @@
-import { Stone } from "./stone.mjs"
+import { Stone, StoneColor } from "./stone.mjs"
 
 const ROTATION = Object.freeze({
   S_ORIENTATION: 0,
@@ -9,15 +9,16 @@ export class SShape {
   constructor(board) {
     this.board_ = board;
     this.current_rotation_ = ROTATION.S_ORIENTATION;
+    this.color_ = StoneColor.GREEN;
 
     // S-shape in vertical orientation:
     //    [X][X]
     // [X][X]
     this.stones_ = [
-      new Stone(4, -3, this.board_),  // top left
-      new Stone(5, -3, this.board_),  // top right
-      new Stone(3, -2, this.board_),  // bottom left
-      new Stone(4, -2, this.board_),  // bottom right
+      new Stone(4, -3, this.color_, this.board_),  // top left
+      new Stone(5, -3, this.color_, this.board_),  // top right
+      new Stone(3, -2, this.color_, this.board_),  // bottom left
+      new Stone(4, -2, this.color_, this.board_),  // bottom right
     ];
   }
 

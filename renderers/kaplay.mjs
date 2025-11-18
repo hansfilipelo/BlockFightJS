@@ -41,19 +41,23 @@ class KaplayRenderer {
     this.stones_ = [];
   }
 
-  createStone(x_pos, y_pos) {
+  createStone(x_pos, y_pos, stone_color) {
     return add([
       rect(this.stone_size_, this.stone_size_),
       pos(xPosToScreen(x_pos, this.x_start_, this.stone_size_),
           yPosToScreen(y_pos, this.y_start_, this.stone_size_)),
       outline(OUTLINE_SIZE),
+      color(stone_color.r_, stone_color.g_, stone_color.b_),
       "stone"
     ]);
   }
 
-  updateStone(kaplay_stone, x_pos, y_pos) {
+  updateStone(kaplay_stone, x_pos, y_pos, stone_color) {
     kaplay_stone.c("pos").pos.x = xPosToScreen(x_pos, this.x_start_, this.stone_size_);
     kaplay_stone.c("pos").pos.y = yPosToScreen(y_pos, this.y_start_, this.stone_size_);
+    kaplay_stone.c("color").color.r = stone_color.r_;
+    kaplay_stone.c("color").color.g = stone_color.g_;
+    kaplay_stone.c("color").color.b = stone_color.b_;
   }
 
   onResize() {
@@ -89,11 +93,15 @@ class KaplayRenderer {
 
     for (let x = 0; x < this.board_.width(); ++x) {
       for (let y = 0; y < this.board_.height(); ++y) {
-        if (this.board_.hasStone(x, y)) {
+        let stone = this.board_.getStone(x, y);
+        if (stone !== null) {
           if (n_rendered_stones >= this.stones_.length) {
-            this.stones_.push(this.createStone(x, y));
+            this.stones_.push(this.createStone(x, y, stone.color()));
           } else {
-            this.updateStone(this.stones_[n_rendered_stones], x, y);
+            this.updateStone(this.stones_[n_rendered_stones],
+                              x,
+                              y,
+                              stone.color());
           }
           ++n_rendered_stones;
         }
