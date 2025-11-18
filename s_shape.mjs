@@ -63,10 +63,7 @@ export class SShape {
   }
 
   rotate() {
-    console.log("rotate");
     if (this.current_rotation_ === ROTATION.S_ORIENTATION) {
-      console.log("this.stones_[1].canMove(-1, -1): ", this.stones_[1].canMove(-1, -1));
-      console.log("this.stones_[2].canMove(2, 0): ", this.stones_[2].canMove(2, 0));
       if (this.stones_[1].canMove(-1, -1) &&
           this.stones_[2].canMove(2, 0)) {
         // stone[0] stays in place
