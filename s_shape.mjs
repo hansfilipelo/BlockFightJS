@@ -15,10 +15,10 @@ export class SShape {
     //    [X][X]
     // [X][X]
     this.stones_ = [
-      new Stone(4, -3, this.color_, this.board_),  // top left
-      new Stone(5, -3, this.color_, this.board_),  // top right
-      new Stone(3, -2, this.color_, this.board_),  // bottom left
-      new Stone(4, -2, this.color_, this.board_),  // bottom right
+      new Stone(4, -2, this.color_, this.board_),  // top left
+      new Stone(5, -2, this.color_, this.board_),  // top right
+      new Stone(3, -1, this.color_, this.board_),  // bottom left
+      new Stone(4, -1, this.color_, this.board_),  // bottom right
     ];
   }
 
