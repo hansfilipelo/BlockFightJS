@@ -13,7 +13,7 @@ class InputInterceptor {
   onDownPressed() {
     if (!this.down_pressed_) {
       this.down_pressed_ = true;
-      this.player_.drop();
+      this.player_.drop(false /* reload_timer */);
     }
   }
 

@@ -6,7 +6,6 @@ function startCallback(player, name) {
 
 const SCORE_PER_ROW = 100;
 const SCORE_PER_DROP = 10;
-const LEVEL_UP_INTERVAL_SECONDS = 30;
 
 export class Player {
   constructor(board, renderer, player_info_controller) {
@@ -15,10 +14,11 @@ export class Player {
     this.current_shape_ = null;
 
     this.level_ = 1;
+    this.n_drops_on_level_ = 0;
     this.score_ = 0;
+    this.level_up_drops_interval_ = 30 * (1000 / this.getDropTimerInterval());
 
     this.drop_timer_ = null;
-    this.level_timer_ = null;
     this.player_name_ = null;
     this.is_playing_ = false;
     this.is_paused_ = false;
@@ -30,24 +30,19 @@ export class Player {
 
   reloadTimer() {
     console.assert(this.is_playing_);
-    this.drop_timer_ = setTimeout(this.drop.bind(this),
+    this.drop_timer_ = setTimeout(this.drop.bind(this, true /* reload_timer */),
                                   this.getDropTimerInterval());
   }
 
   levelUp() {
     this.level_++;
+    this.n_drops_on_level_ = 0;
     this.player_info_controller_.setLevel(this.level_);
-    this.levelTimer();
-  }
-
-  levelTimer() {
-    this.level_timer_ = setTimeout(this.levelUp.bind(this),
-                                  LEVEL_UP_INTERVAL_SECONDS * 1000);
+    this.level_up_drops_interval_ = 30 * (1000 / this.getDropTimerInterval());
   }
 
   clearTimers() {
     clearTimeout(this.drop_timer_);
-    clearTimeout(this.level_timer_);
   }
 
   start(player_name) {
@@ -63,14 +58,12 @@ export class Player {
     this.player_info_controller_.setScore(this.score_);
 
     this.reloadTimer();
-    this.levelTimer();
   }
 
   pauseResume() {
     if (this.is_paused_) {
       this.is_paused_ = false;
       this.reloadTimer();
-      this.levelTimer();
     } else {
       this.clearTimers();
       this.is_paused_ = true;
@@ -91,16 +84,19 @@ export class Player {
     if (this.current_shape_ !== null) {
       return true;
     }
-    console.log("current_shape_", this.current_shape_);
-    console.log("Game over");
     this.is_playing_ = false;
     this.clearTimers();
     return false;
   }
 
-  drop() {
+  drop(reload_timer) {
     if (!this.is_playing_) {
       return;
+    }
+
+    this.n_drops_on_level_++;
+    if (this.n_drops_on_level_ >= this.level_up_drops_interval_) {
+      this.levelUp();
     }
 
     if (!this.current_shape_.drop()) {
@@ -112,7 +108,7 @@ export class Player {
 
     this.renderer_.draw();
 
-    if (this.is_playing_) {
+    if (this.is_playing_ && reload_timer) {
       this.reloadTimer();
     }
   }
@@ -149,7 +145,7 @@ export class Player {
       return;
     }
 
-    while (this.current_shape_.drop()) {
+    while (this.current_shape_.drop(false /* reload_timer */)) {
       this.addScore(SCORE_PER_DROP);
     }
 
