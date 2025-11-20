@@ -2,9 +2,10 @@ import { IShape } from "./i_shape.mjs"
 import { SShape } from "./s_shape.mjs"
 import { ZShape } from "./z_shape.mjs"
 import { OShape } from "./o_shape.mjs"
+import { LShape } from "./l_shape.mjs"
 
 function randomShape() {
-  const shapes = [IShape, SShape, ZShape, OShape];
+  const shapes = [IShape, SShape, ZShape, OShape, LShape];
   const idx = Math.floor(Math.random() * shapes.length);
   return shapes[idx];
 }
