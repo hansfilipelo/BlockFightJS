@@ -33,7 +33,16 @@ export class LShape {
   }
 
   getRowSpan() {
-    return [this.stones_[0].y_pos(), this.stones_[2].y_pos()];
+    let span = [NaN, NaN];
+    for (let stone of this.stones_) {
+      if (isNaN(span[0]) || stone.y_pos() < span[0]) {
+        span[0] = stone.y_pos();
+      }
+      if (isNaN(span[1]) || stone.y_pos() > span[1]) {
+        span[1] = stone.y_pos();
+      }
+    }
+    return span;
   }
 
   drop() {
