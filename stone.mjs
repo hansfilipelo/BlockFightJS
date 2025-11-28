@@ -78,6 +78,7 @@ export const StoneColor = Object.freeze({
   YELLOW: new Color(255, 255, 0),
   PURPLE: new Color(128, 0, 128),
   ORANGE: new Color(255, 165, 0),
+  CYAN: new Color(0, 255, 255),
 });
 
 export class Stone {
