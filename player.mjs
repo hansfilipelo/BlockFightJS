@@ -90,7 +90,7 @@ export class Player {
   }
 
   drop(reload_timer) {
-    if (!this.is_playing_) {
+    if (!this.is_playing_ || this.is_paused_) {
       return;
     }
 
@@ -114,7 +114,7 @@ export class Player {
   }
 
   rotate() {
-    if (!this.is_playing_) {
+    if (!this.is_playing_ || this.is_paused_) {
       return;
     }
 
@@ -123,7 +123,7 @@ export class Player {
   }
 
   left() {
-    if (!this.is_playing_) {
+    if (!this.is_playing_ || this.is_paused_) {
       return;
     }
 
@@ -132,7 +132,7 @@ export class Player {
   }
 
   right() {
-    if (!this.is_playing_) {
+    if (!this.is_playing_ || this.is_paused_) {
       return;
     }
 
@@ -141,7 +141,7 @@ export class Player {
   }
 
   dropAllTheWay() {
-    if (!this.is_playing_) {
+    if (!this.is_playing_ || this.is_paused_) {
       return;
     }
 
