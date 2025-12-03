@@ -1,4 +1,4 @@
-import { Stone, StoneColor } from "./stone.mjs"
+import { Stone, StoneColor } from "../stone.mjs"
 
 const ROTATION = Object.freeze({
   DEFAULT: 0,
