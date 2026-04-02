@@ -4,12 +4,17 @@ export async function createRenderer(board, window, game_canvas, platform=null) 
                      window.matchMedia('(prefers-color-scheme: dark)').matches;
 
   if (!platform) {
-    renderer = await import("./renderers/kaplay.mjs").then(
+    renderer = await import("./renderers/webgl.mjs").then(
       module => module.default(board, game_canvas, is_dark_mode));
   }
 
   if (platform === "kaplay") {
     renderer = await import("./renderers/kaplay.mjs").then(
+      module => module.default(board, game_canvas, is_dark_mode));
+  }
+
+  if (platform === "webgl") {
+    renderer = await import("./renderers/webgl.mjs").then(
       module => module.default(board, game_canvas, is_dark_mode));
   }
 

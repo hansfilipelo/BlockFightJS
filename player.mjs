@@ -26,6 +26,7 @@ export class Player {
     this.player_info_controller_ = player_info_controller;
     this.player_info_controller_.setStartGameCallback(
       (name) => { startCallback(this, name) });
+    this.renderer_.draw();
   }
 
   reloadTimer() {
