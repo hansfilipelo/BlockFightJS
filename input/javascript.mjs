@@ -11,12 +11,13 @@ const KEY_MAP = {
 class JavascriptInputHandler {
   constructor(input_interceptor) {
     this.interceptor_ = input_interceptor;
+    this.pressed_keys_ = new Set();
 
     this.onKeyDown_ = (e) => {
       const mapping = KEY_MAP[e.key];
       if (mapping) {
         e.preventDefault();
-        this.interceptor_[mapping.pressed]();
+        this.pressed_keys_.add(e.key);
       }
     };
 
@@ -24,12 +25,25 @@ class JavascriptInputHandler {
       const mapping = KEY_MAP[e.key];
       if (mapping) {
         e.preventDefault();
+        this.pressed_keys_.delete(e.key);
         this.interceptor_[mapping.released]();
       }
     };
 
     document.addEventListener("keydown", this.onKeyDown_);
     document.addEventListener("keyup", this.onKeyUp_);
+
+    // Poll held keys every frame, matching Kaplay's onKeyDown behavior
+    const poll = () => {
+      for (const key of this.pressed_keys_) {
+        const mapping = KEY_MAP[key];
+        if (mapping) {
+          this.interceptor_[mapping.pressed]();
+        }
+      }
+      requestAnimationFrame(poll);
+    };
+    requestAnimationFrame(poll);
   }
 }
 
