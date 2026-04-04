@@ -26,6 +26,16 @@ export class Player {
     this.player_info_controller_ = player_info_controller;
     this.player_info_controller_.setStartGameCallback(
       (name) => { startCallback(this, name) });
+    this.player_info_controller_.setContinueCallback(() => {
+      this.pauseResume();
+    });
+    this.player_info_controller_.setResetCallback(() => {
+      this.start(this.player_name_);
+    });
+    this.player_info_controller_.setNewPlayerCallback(() => {
+      this.reset();
+      renderer_.draw();
+    });
     this.renderer_.draw();
   }
 
@@ -46,28 +56,45 @@ export class Player {
     clearTimeout(this.drop_timer_);
   }
 
-  start(player_name) {
-    this.player_name_ = player_name;
-    this.board_.newStones();
-    this.is_playing_ = this.newShape();
+  reset() {
+    this.clearTimers();
+    this.is_playing_ = false;
     this.is_paused_ = false;
-
+    this.board_.newStones();
     this.level_ = 1;
+    this.n_drops_on_level_ = 0;
     this.score_ = 0;
+    this.player_info_controller_.setLevel(this.level_);
+    this.player_info_controller_.setScore(this.score_);
+  }
+
+  start(player_name) {
+    this.reset();
+    this.player_name_ = player_name;
+    this.is_playing_ = this.newShape();
+    this.level_up_drops_interval_ = 30 * (1000 / this.getDropTimerInterval());
 
     this.player_info_controller_.setLevel(this.level_);
     this.player_info_controller_.setScore(this.score_);
+    this.player_info_controller_.hideOverlay();
 
+    this.renderer_.draw();
     this.reloadTimer();
   }
 
   pauseResume() {
+    if (!this.is_playing_) {
+      return;
+    }
+
     if (this.is_paused_) {
       this.is_paused_ = false;
       this.reloadTimer();
+      this.player_info_controller_.hideOverlay();
     } else {
       this.clearTimers();
       this.is_paused_ = true;
+      this.player_info_controller_.showPauseMenu();
     }
   }
 
@@ -87,6 +114,7 @@ export class Player {
     }
     this.is_playing_ = false;
     this.clearTimers();
+    this.player_info_controller_.showGameOverMenu();
     return false;
   }
 
