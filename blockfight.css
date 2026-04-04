@@ -107,8 +107,14 @@ body.dark-mode #overlay_content {
   color: #fff;
 }
 
-#overlay_content button:hover {
+#overlay_content button:hover,
+#overlay_content button.spatnav-focus {
   background: #357abd;
+}
+
+#overlay_content .spatnav-focus {
+  outline: 3px solid #4a90d9;
+  outline-offset: 2px;
 }
 
 #overlay_content input[type="text"] {
