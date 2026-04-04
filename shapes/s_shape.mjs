@@ -80,6 +80,10 @@ export class SShape {
     } else if (this.current_rotation_ === ROTATION.ALTERNATE) {
       // Rotate from horizontal S back to vertical S
       // Reverse the movements
+      let x_pos = this.stones_[0].x_pos();
+      if (x_pos === 0 ) {
+        this.right();
+      }
       if (this.stones_[2].canMove(-2, 0) &&
           this.stones_[3].canMove(-1, 1)) {
         // stone[0] stays in place
