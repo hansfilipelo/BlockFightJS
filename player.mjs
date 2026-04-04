@@ -1,4 +1,5 @@
-import { newShape } from "./shapes.mjs"
+import { newShape, randomShapeClass, getShapePreview } from "./shapes.mjs"
+import { Stone } from "./stone.mjs"
 
 function startCallback(player, name) {
   player.start(name);
@@ -8,10 +9,15 @@ const SCORE_PER_ROW = 100;
 const SCORE_PER_DROP = 10;
 
 export class Player {
-  constructor(board, renderer, player_info_controller) {
+  constructor(board, renderer, player_info_controller,
+              preview_board, preview_renderer) {
     this.board_ = board;
     this.renderer_ = renderer;
     this.current_shape_ = null;
+    this.next_shape_class_ = null;
+
+    this.preview_board_ = preview_board;
+    this.preview_renderer_ = preview_renderer;
 
     this.level_ = 1;
     this.n_drops_on_level_ = 0;
@@ -37,6 +43,7 @@ export class Player {
       this.renderer_.draw();
     });
     this.renderer_.draw();
+    this.clearPreview_();
   }
 
   reloadTimer() {
@@ -64,13 +71,16 @@ export class Player {
     this.level_ = 1;
     this.n_drops_on_level_ = 0;
     this.score_ = 0;
+    this.next_shape_class_ = null;
     this.player_info_controller_.setLevel(this.level_);
     this.player_info_controller_.setScore(this.score_);
+    this.clearPreview_();
   }
 
   start(player_name) {
     this.reset();
     this.player_name_ = player_name;
+    this.next_shape_class_ = randomShapeClass();
     this.is_playing_ = this.newShape();
     this.level_up_drops_interval_ = 30 * (1000 / this.getDropTimerInterval());
 
@@ -108,14 +118,38 @@ export class Player {
   }
 
   newShape() {
-    this.current_shape_ = newShape(this.board_);
-    if (this.current_shape_ !== null) {
-      return true;
+    const ShapeClass = this.next_shape_class_;
+    this.next_shape_class_ = randomShapeClass();
+    this.renderPreview_();
+
+    if (!ShapeClass.canCreate(this.board_)) {
+      this.is_playing_ = false;
+      this.clearTimers();
+      this.player_info_controller_.showGameOverMenu();
+      return false;
     }
-    this.is_playing_ = false;
-    this.clearTimers();
-    this.player_info_controller_.showGameOverMenu();
-    return false;
+    this.current_shape_ = new ShapeClass(this.board_);
+    return true;
+  }
+
+  // -----------------------------------------------------------------------
+  // Preview rendering
+  // -----------------------------------------------------------------------
+
+  renderPreview_() {
+    if (!this.preview_board_ || !this.next_shape_class_) return;
+    this.preview_board_.newStones();
+    const preview = getShapePreview(this.next_shape_class_);
+    for (const pos of preview.positions) {
+      new Stone(pos.x, pos.y, preview.color, this.preview_board_);
+    }
+    this.preview_renderer_.draw();
+  }
+
+  clearPreview_() {
+    if (!this.preview_board_) return;
+    this.preview_board_.newStones();
+    this.preview_renderer_.draw();
   }
 
   drop(reload_timer) {

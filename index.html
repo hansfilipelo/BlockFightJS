@@ -11,7 +11,8 @@
           new player_info_controller.PlayerInfoController(
             document.getElementById("overlay"),
             document.getElementById("sidebar")),
-          document.getElementById("game_canvas")).then(game_out => {
+          document.getElementById("game_canvas"),
+          document.getElementById("preview_canvas")).then(game_out => {
               game = game_out;
         });
       });
@@ -20,6 +21,12 @@
 </head>
 <body>
   <div id="sidebar">
+    <div id="preview">
+      <label id="preview_label">Next:</label>
+      <div id="preview_container">
+        <canvas id="preview_canvas"></canvas>
+      </div>
+    </div>
     <div id="score">
       <label id="score_label">
         Score:

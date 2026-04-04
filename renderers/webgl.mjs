@@ -24,6 +24,7 @@ const FRAGMENT_SRC = `
   uniform vec2 u_board_origin;
   uniform vec2 u_board_size;
   uniform float u_stone_size;
+  uniform vec4 u_stone_outline_color;
   uniform float u_outline_size;
   uniform vec4 u_outline_color;
   uniform vec4 u_bg_color;
@@ -33,15 +34,6 @@ const FRAGMENT_SRC = `
     vec2 frag = vec2(gl_FragCoord.x, u_canvas_height - gl_FragCoord.y);
     vec2 board_pos = frag - u_board_origin;
     vec2 board_pixel_size = u_board_size * u_stone_size;
-
-    // Board outline
-    if (board_pos.x < u_outline_size ||
-        board_pos.x > board_pixel_size.x - u_outline_size ||
-        board_pos.y < u_outline_size ||
-        board_pos.y > board_pixel_size.y - u_outline_size) {
-      gl_FragColor = u_outline_color;
-      return;
-    }
 
     // Which cell and position within it
     vec2 cell = clamp(floor(board_pos / u_stone_size),
@@ -58,12 +50,21 @@ const FRAGMENT_SRC = `
           cell_pos.x > u_stone_size - u_outline_size ||
           cell_pos.y < u_outline_size ||
           cell_pos.y > u_stone_size - u_outline_size) {
-        gl_FragColor = u_outline_color;
+        gl_FragColor = u_stone_outline_color;
+        return;
       } else {
         gl_FragColor = vec4(stone_color.rgb, 1.0);
       }
     } else {
       gl_FragColor = u_bg_color;
+    }
+
+    // Board outline
+    if (board_pos.x < u_outline_size ||
+        board_pos.x > board_pixel_size.x - u_outline_size ||
+        board_pos.y < u_outline_size ||
+        board_pos.y > board_pixel_size.y - u_outline_size) {
+      gl_FragColor = u_outline_color;
     }
   }
 `;
@@ -114,10 +115,21 @@ function calculateStoneSize(window_width, window_height, board_width, board_heig
 // ---------------------------------------------------------------------------
 
 class WebGLRenderer {
-  constructor(board, game_canvas, is_dark_mode) {
+  constructor(board, game_canvas, is_dark_mode, is_preview_renderer) {
     this.board_ = board;
     this.game_canvas_ = game_canvas;
     this.is_dark_mode_ = is_dark_mode;
+    this.is_preview_renderer_ = is_preview_renderer;
+
+    if (this.is_preview_renderer_) {
+      this.outline_v_ = this.is_dark_mode_ ? 0.0 : 1.0;
+      this.stone_outline_v_ = this.is_dark_mode_ ? 0.5 : 0.0;
+      this.bg_v_ = this.is_dark_mode_ ? 0.0 : 1.0;
+    } else {
+      this.outline_v_ = this.is_dark_mode_ ? 0.5 : 0.0;
+      this.stone_outline_v_ = this.outline_v_
+      this.bg_v_ = this.is_dark_mode_ ? 0.15 : 0.95;
+    }
 
     const gl = game_canvas.getContext("webgl") ||
                game_canvas.getContext("experimental-webgl");
@@ -136,14 +148,21 @@ class WebGLRenderer {
 
     this.a_position_ = gl.getAttribLocation(this.program_, "a_position");
     this.u_resolution_ = gl.getUniformLocation(this.program_, "u_resolution");
-    this.u_board_colors_ = gl.getUniformLocation(this.program_, "u_board_colors");
-    this.u_board_origin_ = gl.getUniformLocation(this.program_, "u_board_origin");
+    this.u_board_colors_ = gl.getUniformLocation(this.program_,
+                                                 "u_board_colors");
+    this.u_board_origin_ = gl.getUniformLocation(this.program_,
+                                                 "u_board_origin");
     this.u_board_size_ = gl.getUniformLocation(this.program_, "u_board_size");
     this.u_stone_size_ = gl.getUniformLocation(this.program_, "u_stone_size");
-    this.u_outline_size_ = gl.getUniformLocation(this.program_, "u_outline_size");
-    this.u_outline_color_ = gl.getUniformLocation(this.program_, "u_outline_color");
+    this.u_stone_outline_color_ =
+      gl.getUniformLocation(this.program_, "u_stone_outline_color");
+    this.u_outline_size_ =
+      gl.getUniformLocation(this.program_, "u_outline_size");
+    this.u_outline_color_ =
+      gl.getUniformLocation(this.program_, "u_outline_color");
     this.u_bg_color_ = gl.getUniformLocation(this.program_, "u_bg_color");
-    this.u_canvas_height_ = gl.getUniformLocation(this.program_, "u_canvas_height");
+    this.u_canvas_height_ =
+      gl.getUniformLocation(this.program_, "u_canvas_height");
 
     // Pre-allocate per-cell color data (RGBA, never reallocated)
     const bw = this.board_.width();
@@ -281,14 +300,15 @@ class WebGLRenderer {
     gl.uniform2f(this.u_board_origin_, this.x_start_ * dpr, this.y_start_ * dpr);
     gl.uniform2f(this.u_board_size_, bw, bh);
     gl.uniform1f(this.u_stone_size_, this.stone_size_ * dpr);
+    gl.uniform4f(this.u_stone_outline_color_,
+                 this.stone_outline_v_,
+                 this.stone_outline_v_,
+                 this.stone_outline_v_, 1.0);
     gl.uniform1f(this.u_outline_size_, OUTLINE_SIZE * dpr);
     gl.uniform1f(this.u_canvas_height_, this.game_canvas_.height);
 
-    const outline_v = this.is_dark_mode_ ? 0.5 : 0.0;
-    gl.uniform4f(this.u_outline_color_, outline_v, outline_v, outline_v, 1.0);
-
-    const bg_v = this.is_dark_mode_ ? 0.15 : 0.95;
-    gl.uniform4f(this.u_bg_color_, bg_v, bg_v, bg_v, 1.0);
+    gl.uniform4f(this.u_outline_color_, this.outline_v_, this.outline_v_, this.outline_v_, 1.0);
+    gl.uniform4f(this.u_bg_color_, this.bg_v_, this.bg_v_, this.bg_v_, 1.0);
 
     // Draw the entire board in a single call
     gl.bindBuffer(gl.ARRAY_BUFFER, this.vertex_buffer_);
@@ -299,6 +319,6 @@ class WebGLRenderer {
   }
 }
 
-export default function (board, game_canvas, is_dark_mode) {
-  return new WebGLRenderer(board, game_canvas, is_dark_mode);
+export default function (board, game_canvas, is_dark_mode, is_preview_renderer) {
+  return new WebGLRenderer(board, game_canvas, is_dark_mode, is_preview_renderer);
 }
