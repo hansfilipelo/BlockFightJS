@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html></html>
+<html>
 <head>
   <link rel="stylesheet" href="blockfight.css">
   <title>Block Fight</title>
@@ -9,7 +9,8 @@
       import('./player_info_controller.mjs').then(player_info_controller => {
         block_fight.run(
           new player_info_controller.PlayerInfoController(
-            document.getElementById("menu")),
+            document.getElementById("overlay"),
+            document.getElementById("sidebar")),
           document.getElementById("game_canvas")).then(game_out => {
               game = game_out;
         });
@@ -18,32 +19,45 @@
   </script>
 </head>
 <body>
-  <div id="menu">
-    <div id="player_name">
-    <h1>Block Fight</h1>
-    <label id="player_name_label">
-      Name:
-      <input id="player_name_input" type="text">
-    </label>
-    </div>
+  <div id="sidebar">
     <div id="score">
-    <label id="score_label">
-      Score:
-      <span id="score_value">0</span>
-    </label>
+      <label id="score_label">
+        Score:
+        <span id="score_value">0</span>
+      </label>
     </div>
     <div id="level">
-    <label id="level_label">
-      Level:
-      <span id="level_value">1</span>
-    </label>
-    </div>
-    <div id="start_button">
-      <button id="start_button_button">Start</button>
+      <label id="level_label">
+        Level:
+        <span id="level_value">1</span>
+      </label>
     </div>
   </div>
   <div id="board">
     <canvas id="game_canvas"></canvas>
+    <div id="overlay">
+      <div id="overlay_content">
+        <div id="start_menu">
+          <h1>Block Fight</h1>
+          <label id="player_name_label">
+            Name:
+            <input id="player_name_input" type="text">
+          </label>
+          <button id="start_button">Start</button>
+        </div>
+        <div id="pause_menu" hidden>
+          <h2>Paused</h2>
+          <button id="continue_button">Continue</button>
+          <button id="reset_button">Reset Game</button>
+          <button id="new_player_button">New Player</button>
+        </div>
+        <div id="game_over_menu" hidden>
+          <h2>Game Over</h2>
+          <button id="game_over_reset_button">Play Again</button>
+          <button id="game_over_new_player_button">New Player</button>
+        </div>
+      </div>
+    </div>
   </div>
 </body>
 </html>
