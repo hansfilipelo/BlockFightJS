@@ -20,6 +20,8 @@ class PlayerInfoController {
     this.reset_callback_ = null;
     this.new_player_callback_ = null;
 
+    this.focused_index_ = 0;
+
     // Start menu
     overlay_div.querySelector("#start_button").addEventListener("click",
       () => { startGameCallback(this); });
@@ -64,11 +66,16 @@ class PlayerInfoController {
     this.new_player_callback_ = callback;
   }
 
+  // -----------------------------------------------------------------------
+  // Overlay visibility
+  // -----------------------------------------------------------------------
+
   showStartMenu() {
     this.start_menu_.hidden = false;
     this.pause_menu_.hidden = true;
     this.game_over_menu_.hidden = true;
     this.overlay_.hidden = false;
+    this.setFocus_(0);
   }
 
   showPauseMenu() {
@@ -76,6 +83,7 @@ class PlayerInfoController {
     this.pause_menu_.hidden = false;
     this.game_over_menu_.hidden = true;
     this.overlay_.hidden = false;
+    this.setFocus_(0);
   }
 
   showGameOverMenu() {
@@ -83,10 +91,66 @@ class PlayerInfoController {
     this.pause_menu_.hidden = true;
     this.game_over_menu_.hidden = false;
     this.overlay_.hidden = false;
+    this.setFocus_(0);
   }
 
   hideOverlay() {
     this.overlay_.hidden = true;
+    // Remove visual focus when hiding
+    const prev = this.overlay_.querySelector('.spatnav-focus');
+    if (prev) prev.classList.remove('spatnav-focus');
+  }
+
+  isVisible() {
+    return !this.overlay_.hidden;
+  }
+
+  // -----------------------------------------------------------------------
+  // Spatial navigation
+  // -----------------------------------------------------------------------
+
+  getFocusableElements_() {
+    let menu = null;
+    if (!this.start_menu_.hidden) menu = this.start_menu_;
+    else if (!this.pause_menu_.hidden) menu = this.pause_menu_;
+    else if (!this.game_over_menu_.hidden) menu = this.game_over_menu_;
+    if (!menu) return [];
+    return Array.from(menu.querySelectorAll('button, input'));
+  }
+
+  setFocus_(index) {
+    const elements = this.getFocusableElements_();
+    if (elements.length === 0) return;
+
+    const prev = this.overlay_.querySelector('.spatnav-focus');
+    if (prev) prev.classList.remove('spatnav-focus');
+
+    // Wrap around
+    this.focused_index_ =
+      ((index % elements.length) + elements.length) % elements.length;
+    elements[this.focused_index_].classList.add('spatnav-focus');
+  }
+
+  navigateUp() {
+    if (!this.isVisible()) return;
+    this.setFocus_(this.focused_index_ - 1);
+  }
+
+  navigateDown() {
+    if (!this.isVisible()) return;
+    this.setFocus_(this.focused_index_ + 1);
+  }
+
+  activateFocused() {
+    if (!this.isVisible()) return;
+    const elements = this.getFocusableElements_();
+    if (elements.length === 0) return;
+    const el = elements[this.focused_index_];
+    if (el.tagName === 'INPUT') {
+      el.focus();
+    } else {
+      el.click();
+    }
   }
 
   getPlayerName() {

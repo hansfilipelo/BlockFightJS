@@ -183,4 +183,24 @@ export class Player {
     this.is_playing_ = this.newShape();
     this.renderer_.draw();
   }
+
+  // -----------------------------------------------------------------------
+  // Overlay / spatial navigation pass-through
+  // -----------------------------------------------------------------------
+
+  isOverlayVisible() {
+    return this.player_info_controller_.isVisible();
+  }
+
+  menuUp() {
+    this.player_info_controller_.navigateUp();
+  }
+
+  menuDown() {
+    this.player_info_controller_.navigateDown();
+  }
+
+  menuSelect() {
+    this.player_info_controller_.activateFocused();
+  }
 }

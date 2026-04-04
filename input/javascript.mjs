@@ -4,9 +4,13 @@ const KEY_MAP = {
   "ArrowLeft":  { pressed: "onLeftPressed",    released: "onLeftReleased" },
   "ArrowRight": { pressed: "onRightPressed",   released: "onRightReleased"},
   " ":          { pressed: "onSpacePressed",   released: "onSpaceReleased"},
+  "Enter":      { pressed: "onEnterPressed",   released: "onEnterReleased"},
   "p":          { pressed: "onPausePressed",   released: "onPauseReleased"},
   "P":          { pressed: "onPausePressed",   released: "onPauseReleased"},
 };
+
+// Keys that exit a focused input and resume spatnav
+const NAV_KEYS = new Set(["ArrowUp", "ArrowDown", "Enter"]);
 
 class JavascriptInputHandler {
   constructor(input_interceptor) {
@@ -14,6 +18,15 @@ class JavascriptInputHandler {
     this.pressed_keys_ = new Set();
 
     this.onKeyDown_ = (e) => {
+      if (e.target.tagName === 'INPUT') {
+        // Let Up/Down/Enter blur the input and resume spatnav
+        if (NAV_KEYS.has(e.key)) {
+          e.target.blur();
+        } else {
+          return;
+        }
+      }
+
       const mapping = KEY_MAP[e.key];
       if (mapping) {
         e.preventDefault();
@@ -24,8 +37,9 @@ class JavascriptInputHandler {
     this.onKeyUp_ = (e) => {
       const mapping = KEY_MAP[e.key];
       if (mapping) {
-        e.preventDefault();
         this.pressed_keys_.delete(e.key);
+        if (e.target.tagName === 'INPUT' && !NAV_KEYS.has(e.key)) return;
+        e.preventDefault();
         this.interceptor_[mapping.released]();
       }
     };

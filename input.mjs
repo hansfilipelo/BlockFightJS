@@ -9,8 +9,17 @@ class InputInterceptor {
     this.left_pressed_ = false;
     this.right_pressed_ = false;
     this.space_pressed_ = false;
+    this.enter_pressed_ = false;
   }
   onDownPressed() {
+    if (this.player_.isOverlayVisible()) {
+      if (!this.down_pressed_) {
+        this.down_pressed_ = Date.now();
+        this.player_.menuDown();
+      }
+      return;
+    }
+
     if (!this.down_pressed_) {
       this.down_pressed_ = Date.now();
       this.player_.drop(false /* reload_timer */);
@@ -29,7 +38,11 @@ class InputInterceptor {
   onUpPressed() {
     if (!this.up_pressed_) {
       this.up_pressed_ = true;
-      this.player_.rotate();
+      if (this.player_.isOverlayVisible()) {
+        this.player_.menuUp();
+      } else {
+        this.player_.rotate();
+      }
     }
   }
 
@@ -38,6 +51,8 @@ class InputInterceptor {
   }
 
   onLeftPressed() {
+    if (this.player_.isOverlayVisible()) return;
+
     if (!this.left_pressed_) {
       this.left_pressed_ = Date.now();
       this.player_.left();
@@ -54,6 +69,8 @@ class InputInterceptor {
   }
 
   onRightPressed() {
+    if (this.player_.isOverlayVisible()) return;
+
     if (!this.right_pressed_) {
       this.right_pressed_ = Date.now();
       this.player_.right();
@@ -71,13 +88,30 @@ class InputInterceptor {
 
   onSpacePressed() {
     if (!this.space_pressed_) {
-        this.space_pressed_ = true;
-      this.player_.dropAllTheWay();
+      this.space_pressed_ = true;
+      if (this.player_.isOverlayVisible()) {
+        this.player_.menuSelect();
+      } else {
+        this.player_.dropAllTheWay();
+      }
     }
   }
 
   onSpaceReleased() {
     this.space_pressed_ = false;
+  }
+
+  onEnterPressed() {
+    if (!this.enter_pressed_) {
+      this.enter_pressed_ = true;
+      if (this.player_.isOverlayVisible()) {
+        this.player_.menuSelect();
+      }
+    }
+  }
+
+  onEnterReleased() {
+    this.enter_pressed_ = false;
   }
 
   onPausePressed() {
