@@ -1,7 +1,12 @@
-export async function createRenderer(board, window, game_canvas, platform=null) {
+export async function createRenderer(board,
+                                     window,
+                                     game_canvas,
+                                     platform=null,
+                                     force_dark_mode=false) {
   let renderer;
-  let is_dark_mode = window.matchMedia &&
-                     window.matchMedia('(prefers-color-scheme: dark)').matches;
+  let is_dark_mode = force_dark_mode || 
+                     (window.matchMedia &&
+                      window.matchMedia('(prefers-color-scheme: dark)').matches);
 
   if (!platform) {
     renderer = await import("./renderers/webgl.mjs").then(
