@@ -9,20 +9,62 @@ const VERTEX_SRC = `
   uniform vec2 u_resolution;
 
   void main() {
-    // Convert pixel coordinates to 0..1, then to clip space -1..1
     vec2 zeroToOne = a_position / u_resolution;
     vec2 clipSpace = zeroToOne * 2.0 - 1.0;
-    // Flip Y so 0 is at the top
     gl_Position = vec4(clipSpace.x, -clipSpace.y, 0, 1);
   }
 `;
 
+// Single-pass fragment shader: draws board background, stone fills, and all
+// outlines by looking up per-cell color from a data texture.
 const FRAGMENT_SRC = `
   precision mediump float;
-  uniform vec4 u_color;
+
+  uniform sampler2D u_board_colors;
+  uniform vec2 u_board_origin;
+  uniform vec2 u_board_size;
+  uniform float u_stone_size;
+  uniform float u_outline_size;
+  uniform vec4 u_outline_color;
+  uniform vec4 u_bg_color;
+  uniform float u_canvas_height;
 
   void main() {
-    gl_FragColor = u_color;
+    vec2 frag = vec2(gl_FragCoord.x, u_canvas_height - gl_FragCoord.y);
+    vec2 board_pos = frag - u_board_origin;
+    vec2 board_pixel_size = u_board_size * u_stone_size;
+
+    // Board outline
+    if (board_pos.x < u_outline_size ||
+        board_pos.x > board_pixel_size.x - u_outline_size ||
+        board_pos.y < u_outline_size ||
+        board_pos.y > board_pixel_size.y - u_outline_size) {
+      gl_FragColor = u_outline_color;
+      return;
+    }
+
+    // Which cell and position within it
+    vec2 cell = clamp(floor(board_pos / u_stone_size),
+                      vec2(0.0), u_board_size - 1.0);
+    vec2 cell_pos = board_pos - cell * u_stone_size;
+
+    // Look up color from data texture
+    vec2 uv = (cell + 0.5) / u_board_size;
+    vec4 stone_color = texture2D(u_board_colors, uv);
+
+    if (stone_color.a > 0.0) {
+      // Stone outline
+      if (cell_pos.x < u_outline_size ||
+          cell_pos.x > u_stone_size - u_outline_size ||
+          cell_pos.y < u_outline_size ||
+          cell_pos.y > u_stone_size - u_outline_size) {
+        gl_FragColor = u_outline_color;
+      } else {
+        gl_FragColor = vec4(stone_color.rgb, 1.0);
+      }
+    } else {
+      gl_FragColor = u_bg_color;
+    }
   }
 `;
 
@@ -42,9 +84,9 @@ function compileShader(gl, type, source) {
   return shader;
 }
 
-function createProgram(gl) {
-  const vs = compileShader(gl, gl.VERTEX_SHADER, VERTEX_SRC);
-  const fs = compileShader(gl, gl.FRAGMENT_SHADER, FRAGMENT_SRC);
+function createProgram(gl, vertSrc, fragSrc) {
+  const vs = compileShader(gl, gl.VERTEX_SHADER, vertSrc);
+  const fs = compileShader(gl, gl.FRAGMENT_SHADER, fragSrc);
   const program = gl.createProgram();
   gl.attachShader(program, vs);
   gl.attachShader(program, fs);
@@ -58,21 +100,13 @@ function createProgram(gl) {
 }
 
 // ---------------------------------------------------------------------------
-// Coordinate helpers (same logic as kaplay renderer)
+// Coordinate helpers
 // ---------------------------------------------------------------------------
 
 function calculateStoneSize(window_width, window_height, board_width, board_height) {
   const width_stones = Math.floor(window_width / board_width);
   const height_stones = Math.floor(window_height / board_height);
   return Math.min(width_stones, height_stones);
-}
-
-function xPosToScreen(x_pos, x_start, stone_size) {
-  return x_start + x_pos * stone_size;
-}
-
-function yPosToScreen(y_pos, y_start, stone_size) {
-  return y_start + y_pos * stone_size;
 }
 
 // ---------------------------------------------------------------------------
@@ -85,7 +119,6 @@ class WebGLRenderer {
     this.game_canvas_ = game_canvas;
     this.is_dark_mode_ = is_dark_mode;
 
-    // Obtain a WebGL context
     const gl = game_canvas.getContext("webgl") ||
                game_canvas.getContext("experimental-webgl");
     if (!gl) {
@@ -99,18 +132,42 @@ class WebGLRenderer {
     game_canvas.style.display = 'block';
 
     // Build shader program and cache locations
-    this.program_ = createProgram(gl);
+    this.program_ = createProgram(gl, VERTEX_SRC, FRAGMENT_SRC);
+
     this.a_position_ = gl.getAttribLocation(this.program_, "a_position");
     this.u_resolution_ = gl.getUniformLocation(this.program_, "u_resolution");
-    this.u_color_ = gl.getUniformLocation(this.program_, "u_color");
+    this.u_board_colors_ = gl.getUniformLocation(this.program_, "u_board_colors");
+    this.u_board_origin_ = gl.getUniformLocation(this.program_, "u_board_origin");
+    this.u_board_size_ = gl.getUniformLocation(this.program_, "u_board_size");
+    this.u_stone_size_ = gl.getUniformLocation(this.program_, "u_stone_size");
+    this.u_outline_size_ = gl.getUniformLocation(this.program_, "u_outline_size");
+    this.u_outline_color_ = gl.getUniformLocation(this.program_, "u_outline_color");
+    this.u_bg_color_ = gl.getUniformLocation(this.program_, "u_bg_color");
+    this.u_canvas_height_ = gl.getUniformLocation(this.program_, "u_canvas_height");
 
-    // Reusable vertex buffer (two triangles = one quad)
+    // Pre-allocate per-cell color data (RGBA, never reallocated)
+    const bw = this.board_.width();
+    const bh = this.board_.height();
+    this.color_data_ = new Uint8Array(bw * bh * 4);
+
+    // Create data texture for board cell colors
+    this.board_texture_ = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, this.board_texture_);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, bw, bh, 0,
+                  gl.RGBA, gl.UNSIGNED_BYTE, this.color_data_);
+
+    // Pre-allocate board quad vertex buffer (6 verts × 2 floats)
     this.vertex_buffer_ = gl.createBuffer();
+    this.quad_vertices_ = new Float32Array(12);
 
     // Sync canvas backing size with its CSS layout size
     this.syncCanvasSize_();
 
-    // Compute board layout metrics
+    // Compute board layout metrics and upload quad vertices
     this.computeLayout_();
   }
 
@@ -118,7 +175,6 @@ class WebGLRenderer {
   // Internal helpers
   // -----------------------------------------------------------------------
 
-  /** Make the canvas drawing-buffer match its CSS dimensions. */
   syncCanvasSize_() {
     const dpr = window.devicePixelRatio || 1;
     const display_w = this.game_canvas_.clientWidth;
@@ -134,68 +190,34 @@ class WebGLRenderer {
     this.dpr_ = dpr;
   }
 
-  /** Recompute stone size and board origin from current canvas size. */
   computeLayout_() {
-    // Use CSS (logical) dimensions for layout, same as kaplay renderer which
-    // uses offsetWidth/offsetHeight.
     const css_w = this.game_canvas_.clientWidth;
     const css_h = this.game_canvas_.clientHeight;
+    const bw = this.board_.width();
+    const bh = this.board_.height();
 
-    this.stone_size_ = calculateStoneSize(
-      css_w, css_h,
-      this.board_.width(), this.board_.height());
-
-    this.x_start_ = css_w / 2 -
-      (this.board_.width() * this.stone_size_) / 2;
+    this.stone_size_ = calculateStoneSize(css_w, css_h, bw, bh);
+    this.x_start_ = css_w / 2 - (bw * this.stone_size_) / 2;
     this.y_start_ = 0;
-  }
 
-  // -----------------------------------------------------------------------
-  // Low-level drawing primitives
-  // -----------------------------------------------------------------------
-
-  /** Draw a filled rectangle in pixel (CSS) coordinates. */
-  fillRect_(x, y, w, h, r, g, b, a = 1.0) {
-    const gl = this.gl_;
+    // Build board quad in physical pixels
     const dpr = this.dpr_;
+    const px = this.x_start_ * dpr;
+    const py = this.y_start_ * dpr;
+    const pw = bw * this.stone_size_ * dpr;
+    const ph = bh * this.stone_size_ * dpr;
 
-    // Scale to physical pixels
-    const px = x * dpr;
-    const py = y * dpr;
-    const pw = w * dpr;
-    const ph = h * dpr;
+    const v = this.quad_vertices_;
+    v[0]  = px;       v[1]  = py;
+    v[2]  = px + pw;  v[3]  = py;
+    v[4]  = px;       v[5]  = py + ph;
+    v[6]  = px;       v[7]  = py + ph;
+    v[8]  = px + pw;  v[9]  = py;
+    v[10] = px + pw;  v[11] = py + ph;
 
-    // Two-triangle quad
-    const vertices = new Float32Array([
-      px,      py,
-      px + pw, py,
-      px,      py + ph,
-      px,      py + ph,
-      px + pw, py,
-      px + pw, py + ph
-    ]);
-
+    const gl = this.gl_;
     gl.bindBuffer(gl.ARRAY_BUFFER, this.vertex_buffer_);
-    gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.DYNAMIC_DRAW);
-
-    gl.vertexAttribPointer(this.a_position_, 2, gl.FLOAT, false, 0, 0);
-    gl.enableVertexAttribArray(this.a_position_);
-
-    gl.uniform4f(this.u_color_, r, g, b, a);
-
-    gl.drawArrays(gl.TRIANGLES, 0, 6);
-  }
-
-  /** Draw a rectangle outline (four thin rects). */
-  strokeRect_(x, y, w, h, lineWidth, r, g, b, a = 1.0) {
-    // Top
-    this.fillRect_(x, y, w, lineWidth, r, g, b, a);
-    // Bottom
-    this.fillRect_(x, y + h - lineWidth, w, lineWidth, r, g, b, a);
-    // Left
-    this.fillRect_(x, y + lineWidth, lineWidth, h - 2 * lineWidth, r, g, b, a);
-    // Right
-    this.fillRect_(x + w - lineWidth, y + lineWidth, lineWidth, h - 2 * lineWidth, r, g, b, a);
+    gl.bufferData(gl.ARRAY_BUFFER, v, gl.STATIC_DRAW);
   }
 
   // -----------------------------------------------------------------------
@@ -210,14 +232,14 @@ class WebGLRenderer {
 
   draw() {
     const gl = this.gl_;
+    const dpr = this.dpr_;
+    const bw = this.board_.width();
+    const bh = this.board_.height();
 
-    // Viewport must cover the entire physical-pixel backing store
     gl.viewport(0, 0, this.game_canvas_.width, this.game_canvas_.height);
     gl.useProgram(this.program_);
-    gl.uniform2f(this.u_resolution_,
-                 this.game_canvas_.width, this.game_canvas_.height);
 
-    // Clear the canvas
+    // Clear canvas background
     if (this.is_dark_mode_) {
       gl.clearColor(0.0, 0.0, 0.0, 1.0);
     } else {
@@ -225,45 +247,55 @@ class WebGLRenderer {
     }
     gl.clear(gl.COLOR_BUFFER_BIT);
 
-    const bw = this.board_.width() * this.stone_size_;
-    const bh = this.board_.height() * this.stone_size_;
-
-    // Draw the board background
-    const board_bg_r = this.is_dark_mode_ ? 0.12 : 0.95;
-    const board_bg_g = this.is_dark_mode_ ? 0.12 : 0.95;
-    const board_bg_b = this.is_dark_mode_ ? 0.12 : 0.95;
-    this.fillRect_(this.x_start_, this.y_start_, bw, bh,
-                   board_bg_r, board_bg_g, board_bg_b);
-
-    // Board outline
-    const outline_r = this.is_dark_mode_ ? 1.0 : 0.0;
-    const outline_g = this.is_dark_mode_ ? 1.0 : 0.0;
-    const outline_b = this.is_dark_mode_ ? 1.0 : 0.0;
-    this.strokeRect_(this.x_start_, this.y_start_, bw, bh,
-                     OUTLINE_SIZE, outline_r, outline_g, outline_b);
-
-    // Draw each stone on the board
-    for (let x = 0; x < this.board_.width(); ++x) {
-      for (let y = 0; y < this.board_.height(); ++y) {
+    // Update per-cell color data from board state (no allocation)
+    const data = this.color_data_;
+    for (let y = 0; y < bh; y++) {
+      for (let x = 0; x < bw; x++) {
+        const i = (y * bw + x) * 4;
         const stone = this.board_.getStone(x, y);
         if (stone !== null) {
           const color = stone.color();
-          const sx = xPosToScreen(x, this.x_start_, this.stone_size_);
-          const sy = yPosToScreen(y, this.y_start_, this.stone_size_);
-
-          // Stone fill (color values are 0-255, normalise to 0-1)
-          this.fillRect_(sx, sy,
-                         this.stone_size_, this.stone_size_,
-                         color.r_ / 255, color.g_ / 255, color.b_ / 255);
-
-          // Stone outline
-          this.strokeRect_(sx, sy,
-                           this.stone_size_, this.stone_size_,
-                           OUTLINE_SIZE,
-                           outline_r, outline_g, outline_b);
+          data[i]     = color.r_;
+          data[i + 1] = color.g_;
+          data[i + 2] = color.b_;
+          data[i + 3] = 255;
+        } else {
+          data[i]     = 0;
+          data[i + 1] = 0;
+          data[i + 2] = 0;
+          data[i + 3] = 0;
         }
       }
     }
+
+    // Upload color data to texture (texSubImage2D — no GPU reallocation)
+    gl.activeTexture(gl.TEXTURE0);
+    gl.bindTexture(gl.TEXTURE_2D, this.board_texture_);
+    gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, bw, bh,
+                     gl.RGBA, gl.UNSIGNED_BYTE, data);
+
+    // Set uniforms
+    gl.uniform2f(this.u_resolution_,
+                 this.game_canvas_.width, this.game_canvas_.height);
+    gl.uniform1i(this.u_board_colors_, 0);
+    gl.uniform2f(this.u_board_origin_, this.x_start_ * dpr, this.y_start_ * dpr);
+    gl.uniform2f(this.u_board_size_, bw, bh);
+    gl.uniform1f(this.u_stone_size_, this.stone_size_ * dpr);
+    gl.uniform1f(this.u_outline_size_, OUTLINE_SIZE * dpr);
+    gl.uniform1f(this.u_canvas_height_, this.game_canvas_.height);
+
+    const outline_v = this.is_dark_mode_ ? 0.5 : 0.0;
+    gl.uniform4f(this.u_outline_color_, outline_v, outline_v, outline_v, 1.0);
+
+    const bg_v = this.is_dark_mode_ ? 0.15 : 0.95;
+    gl.uniform4f(this.u_bg_color_, bg_v, bg_v, bg_v, 1.0);
+
+    // Draw the entire board in a single call
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.vertex_buffer_);
+    gl.vertexAttribPointer(this.a_position_, 2, gl.FLOAT, false, 0, 0);
+    gl.enableVertexAttribArray(this.a_position_);
+
+    gl.drawArrays(gl.TRIANGLES, 0, 6);
   }
 }
 
