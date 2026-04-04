@@ -34,7 +34,7 @@ export class Player {
     });
     this.player_info_controller_.setNewPlayerCallback(() => {
       this.reset();
-      renderer_.draw();
+      this.renderer_.draw();
     });
     this.renderer_.draw();
   }
