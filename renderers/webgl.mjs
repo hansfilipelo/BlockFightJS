@@ -28,6 +28,7 @@ const FRAGMENT_SRC = `
   uniform float u_outline_size;
   uniform vec4 u_outline_color;
   uniform vec4 u_bg_color;
+  uniform vec4 u_column_line_color;
   uniform float u_canvas_height;
 
   void main() {
@@ -57,6 +58,15 @@ const FRAGMENT_SRC = `
       }
     } else {
       gl_FragColor = u_bg_color;
+    }
+
+    // Dotted column guide lines
+    if (cell.x > 0.0 && cell_pos.x < 1.0) {
+      float dot_y = mod(board_pos.y, 6.0);
+      if (dot_y < 2.0) {
+        gl_FragColor = mix(gl_FragColor, u_column_line_color,
+                           u_column_line_color.a);
+      }
     }
 
     // Board outline
@@ -161,6 +171,8 @@ class WebGLRenderer {
     this.u_outline_color_ =
       gl.getUniformLocation(this.program_, "u_outline_color");
     this.u_bg_color_ = gl.getUniformLocation(this.program_, "u_bg_color");
+    this.u_column_line_color_ =
+      gl.getUniformLocation(this.program_, "u_column_line_color");
     this.u_canvas_height_ =
       gl.getUniformLocation(this.program_, "u_canvas_height");
 
@@ -309,6 +321,11 @@ class WebGLRenderer {
 
     gl.uniform4f(this.u_outline_color_, this.outline_v_, this.outline_v_, this.outline_v_, 1.0);
     gl.uniform4f(this.u_bg_color_, this.bg_v_, this.bg_v_, this.bg_v_, 1.0);
+
+    // Column lines: subtle blend using outline color at low opacity
+    const col_alpha = this.is_preview_renderer_ ? 0.0 : 0.6;
+    gl.uniform4f(this.u_column_line_color_,
+                 this.outline_v_, this.outline_v_, this.outline_v_, col_alpha);
 
     // Draw the entire board in a single call
     gl.bindBuffer(gl.ARRAY_BUFFER, this.vertex_buffer_);
