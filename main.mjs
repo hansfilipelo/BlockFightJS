@@ -11,6 +11,11 @@ export async function run(player_info_controller, game_canvas) {
   const input_param = urlParams.get('input');
 
   let board = new Board(BOARD_WIDTH, BOARD_HEIGHT, window);
+
+  if (force_dark_mode) {
+    document.body.classList.add('dark-mode');
+  }
+
   let renderer = await createRenderer(board,
                                       window,
                                       game_canvas,
