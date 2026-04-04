@@ -79,6 +79,10 @@ export class ZShape {
         this.current_rotation_ = ROTATION.ALTERNATE;
       }
     } else if (this.current_rotation_ === ROTATION.ALTERNATE) {
+      let x_pos = this.stones_[0].x_pos();
+      if (x_pos === this.board_.width() - 1) {
+        this.left()
+      }
       // Rotate from horizontal Z back to vertical Z
       // Reverse the movements
       if (this.stones_[0].canMove(0, -1) &&
