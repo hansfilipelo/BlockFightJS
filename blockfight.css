@@ -12,6 +12,11 @@
   }
 }
 
+body.dark-mode {
+  background-color: #000;
+  color: #fff;
+}
+
 body {
   margin: 0;
   font-family: sans-serif;
@@ -76,6 +81,12 @@ body {
     border: 1px solid #ccc;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
   }
+}
+
+body.dark-mode #overlay_content {
+  background: #1a1a1a;
+  color: #fff;
+  border: 1px solid #333;
 }
 
 #overlay_content h1,
