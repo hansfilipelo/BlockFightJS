@@ -54,9 +54,12 @@ export class Board {
 
     console.assert(!this.hasStone(new_x_pos, new_y_pos));
 
-    this.stones_[this.getIndex(new_x_pos, new_y_pos)] =
-        this.stones_[this.getIndex(x_pos, y_pos)];
+    const stone = this.stones_[this.getIndex(x_pos, y_pos)];
+    this.stones_[this.getIndex(new_x_pos, new_y_pos)] = stone;
     this.stones_[this.getIndex(x_pos, y_pos)] = null;
+    if (stone != null) {
+      stone.pos_.set(new_x_pos, new_y_pos);
+    }
   }
 
   removeStone(stone) {
@@ -73,10 +76,23 @@ export class Board {
     }
   }
 
-  moveAllDown(start_row, n_times) {
-    for (let y = start_row ; y >= 0; y--) {
+  moveAllDown(rows_to_clear) {
+    const rows_to_clear_set = new Set(rows_to_clear);
+    let cleared_rows_below = 0;
+    for (let y = this.height() - 1; y >= -4; --y) {
+      if (rows_to_clear_set.has(y)) {
+        ++cleared_rows_below;
+        continue;
+      }
+
+      if (cleared_rows_below === 0) {
+        continue;
+      }
+
       for (let x = 0; x < this.width(); ++x) {
-        this.moveStone(x, y, x, y + n_times);
+        if (this.hasStone(x, y)) {
+          this.moveStone(x, y, x, y + cleared_rows_below);
+        }
       }
     }
   }
@@ -101,8 +117,7 @@ export class Board {
     }
 
     if (rows_to_clear.length > 0) {
-      let start_moving_down_from = Math.min.apply(null, rows_to_clear) - 1;
-      this.moveAllDown(start_moving_down_from, rows_to_clear.length);
+      this.moveAllDown(rows_to_clear);
     }
 
     return rows_to_clear.length;
