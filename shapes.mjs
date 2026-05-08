@@ -5,41 +5,63 @@ import { OShape } from "./shapes/o_shape.mjs"
 import { LShape } from "./shapes/l_shape.mjs"
 import { JShape } from "./shapes/j_shape.mjs"
 import { TShape } from "./shapes/t_shape.mjs"
-import { StoneColor } from "./stone.mjs"
+
 
 const ALL_SHAPES = [IShape, SShape, ZShape, OShape, LShape, JShape, TShape];
 
-// Preview positions centered in a 4×4 grid for each shape
-const PREVIEW_LAYOUTS = new Map([
-  [IShape,  { positions: [{x:2,y:0},{x:2,y:1},{x:2,y:2},{x:2,y:3}],
-              color: StoneColor.PURPLE }],
-  [OShape,  { positions: [{x:1,y:1},{x:2,y:1},{x:1,y:2},{x:2,y:2}],
-              color: StoneColor.YELLOW }],
-  [TShape,  { positions: [{x:1,y:1},{x:0,y:2},{x:1,y:2},{x:2,y:2}],
-              color: StoneColor.CYAN }],
-  [LShape,  { positions: [{x:1,y:0},{x:1,y:1},{x:1,y:2},{x:2,y:2}],
-              color: StoneColor.ORANGE }],
-  [JShape,  { positions: [{x:2,y:0},{x:2,y:1},{x:1,y:2},{x:2,y:2}],
-              color: StoneColor.BLUE }],
-  [SShape,  { positions: [{x:1,y:1},{x:2,y:1},{x:0,y:2},{x:1,y:2}],
-              color: StoneColor.GREEN }],
-  [ZShape,  { positions: [{x:0,y:1},{x:1,y:1},{x:1,y:2},{x:2,y:2}],
-              color: StoneColor.RED }],
-]);
 
 export function randomShapeClass() {
   const idx = Math.floor(Math.random() * ALL_SHAPES.length);
   return ALL_SHAPES[idx];
 }
 
-export function getShapePreview(ShapeClass) {
-  return PREVIEW_LAYOUTS.get(ShapeClass);
-}
 
-export function newShape(board, ShapeClass = null) {
-  if (!ShapeClass) ShapeClass = randomShapeClass();
-  if (ShapeClass.canCreate(board)) {
-    return new ShapeClass(board);
+class GenericShape {
+  constructor(board, shape_class) {
+    this.board_ = board;
+    this.shape_class_ = shape_class;
+    this.shape_ = new shape_class(board);
+  }
+
+  moveToBoard(board) {
+    if (!this.shape_class_.canCreate(board)) {
+      return false;
+    }
+
+    for (const stone of this.shape_.stones_) {
+      this.board_.removeStone(stone);
+    }
+
+    this.board_ = board;
+    this.shape_.newStones(this.board_);
+    return true;
+  }
+
+  getRowSpan() {
+    return this.shape_.getRowSpan();
+  }
+
+  drop() {
+    return this.shape_.drop();
+  }
+
+  rotate() {
+    return this.shape_.rotate();
+  }
+
+  left() {
+    return this.shape_.left();
+  }
+
+  right() {
+    return this.shape_.right();
+  }
+};
+
+export function newShape(board) {
+  const shape_class = randomShapeClass();
+  if (shape_class.canCreate(board)) {
+    return new GenericShape(board, shape_class);
   }
   return null;
 }
