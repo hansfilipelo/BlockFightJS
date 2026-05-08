@@ -10,22 +10,26 @@ export class OShape {
     this.current_rotation_ = ROTATION.DEFAULT;
     this.color_ = StoneColor.YELLOW;
 
-    // O-shape (2x2 square):
-    // [X][X]
-    // [X][X]
-    this.stones_ = [
-      new Stone(4, -2, this.color_, this.board_),  // top left
-      new Stone(5, -2, this.color_, this.board_),  // top right
-      new Stone(4, -1, this.color_, this.board_),  // bottom left
-      new Stone(5, -1, this.color_, this.board_),  // bottom right
-    ];
+    this.newStones(board);
   }
 
   static canCreate(board) {
-    return !board.hasStone(4, -2) &&
-           !board.hasStone(5, -2) &&
-           !board.hasStone(4, -1) &&
-           !board.hasStone(5, -1);
+    const middle_x = board.getMiddleX();
+    return !board.hasStone(middle_x - 1, -2) &&
+           !board.hasStone(middle_x, -2) &&
+           !board.hasStone(middle_x - 1, -1) &&
+           !board.hasStone(middle_x, -1);
+  }
+
+  newStones(board) {
+    this.board_ = board;
+    const middle_x = board.getMiddleX();
+    this.stones_ = [
+      new Stone(middle_x - 1, -2, this.color_, this.board_),  // top left
+      new Stone(middle_x, -2, this.color_, this.board_),      // top right
+      new Stone(middle_x - 1, -1, this.color_, this.board_),  // bottom left
+      new Stone(middle_x, -1, this.color_, this.board_),      // bottom right
+    ];
   }
 
   getRowSpan() {
@@ -91,4 +95,3 @@ export class OShape {
     return true;
   }
 };
-

@@ -1,4 +1,4 @@
-import { newShape, randomShapeClass, getShapePreview } from "./shapes.mjs"
+import { newShape } from "./shapes.mjs"
 import { Stone } from "./stone.mjs"
 
 function startCallback(player, name) {
@@ -14,10 +14,10 @@ export class Player {
     this.board_ = board;
     this.renderer_ = renderer;
     this.current_shape_ = null;
-    this.next_shape_class_ = null;
 
     this.preview_board_ = preview_board;
     this.preview_renderer_ = preview_renderer;
+    this.preview_shape_ = null;
 
     this.level_ = 1;
     this.n_drops_on_level_ = 0;
@@ -43,7 +43,7 @@ export class Player {
       this.renderer_.draw();
     });
     this.renderer_.draw();
-    this.clearPreview_();
+    this.clearPreview();
   }
 
   reloadTimer() {
@@ -68,19 +68,18 @@ export class Player {
     this.is_playing_ = false;
     this.is_paused_ = false;
     this.board_.newStones();
+    this.clearPreview();
     this.level_ = 1;
     this.n_drops_on_level_ = 0;
     this.score_ = 0;
     this.next_shape_class_ = null;
     this.player_info_controller_.setLevel(this.level_);
     this.player_info_controller_.setScore(this.score_);
-    this.clearPreview_();
   }
 
   start(player_name) {
     this.reset();
     this.player_name_ = player_name;
-    this.next_shape_class_ = randomShapeClass();
     this.is_playing_ = this.newShape();
     this.level_up_drops_interval_ = 30 * (1000 / this.getDropTimerInterval());
 
@@ -117,36 +116,39 @@ export class Player {
     this.player_info_controller_.setScore(this.score_);
   }
 
-  newShape() {
-    const ShapeClass = this.next_shape_class_;
-    this.next_shape_class_ = randomShapeClass();
-    this.renderPreview_();
+  gameOver() {
+    this.is_playing_ = false;
+    this.clearTimers();
+    this.player_info_controller_.showGameOverMenu();
+  }
 
-    if (!ShapeClass.canCreate(this.board_)) {
-      this.is_playing_ = false;
-      this.clearTimers();
-      this.player_info_controller_.showGameOverMenu();
-      return false;
+  newShape() {
+    if (this.preview_shape_) {
+      if (!this.preview_shape_.moveToBoard(this.board_)) {
+        this.gameOver();
+        return false;
+      }
+      this.current_shape_ = this.preview_shape_;
+    } else {
+      // First shape
+      this.current_shape_ = newShape(this.board_);
+      // This should never fail as board is empty at this point
+      console.assert(this.current_shape_, "Failed to create first shape");
     }
-    this.current_shape_ = new ShapeClass(this.board_);
+
+    this.preview_shape_ = newShape(this.preview_board_);
+    // This should never fail as we just moved shape off the preview board
+    console.assert(this.preview_shape_, "Failed to create preview shape");
+    // In preview board, drop 4 times so shape is visible.
+    for (let i = 0; i < 4; ++i) {
+      console.assert(this.preview_shape_.drop());
+    }
+    this.preview_renderer_.draw();
+
     return true;
   }
 
-  // -----------------------------------------------------------------------
-  // Preview rendering
-  // -----------------------------------------------------------------------
-
-  renderPreview_() {
-    if (!this.preview_board_ || !this.next_shape_class_) return;
-    this.preview_board_.newStones();
-    const preview = getShapePreview(this.next_shape_class_);
-    for (const pos of preview.positions) {
-      new Stone(pos.x, pos.y, preview.color, this.preview_board_);
-    }
-    this.preview_renderer_.draw();
-  }
-
-  clearPreview_() {
+  clearPreview() {
     if (!this.preview_board_) return;
     this.preview_board_.newStones();
     this.preview_renderer_.draw();

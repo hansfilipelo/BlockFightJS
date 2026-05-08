@@ -7,23 +7,30 @@ const ROTATION = Object.freeze({
 
 export class IShape {
   constructor(board) {
-    this.board_ = board;
+    this.board_ = null;
     this.current_rotation_ = ROTATION.VERTICAL;
     this.color_ = StoneColor.PURPLE;
 
-    this.stones_ = [
-      new Stone(5, -4, this.color_, this.board_),
-      new Stone(5, -3, this.color_, this.board_),
-      new Stone(5, -2, this.color_, this.board_),
-      new Stone(5, -1, this.color_, this.board_),
-    ];
+    this.newStones(board);
   }
 
   static canCreate(board) {
-    return !board.hasStone(5, -4) &&
-           !board.hasStone(5, -3) &&
-           !board.hasStone(5, -2) &&
-           !board.hasStone(5, -1);
+    const middle_x = board.getMiddleX();
+    return !board.hasStone(middle_x, -4) &&
+           !board.hasStone(middle_x, -3) &&
+           !board.hasStone(middle_x, -2) &&
+           !board.hasStone(middle_x, -1);
+  }
+
+  newStones(board) {
+    this.board_ = board;
+    const middle_x = board.getMiddleX();
+    this.stones_ = [
+      new Stone(middle_x, -4, this.color_, this.board_),
+      new Stone(middle_x, -3, this.color_, this.board_),
+      new Stone(middle_x, -2, this.color_, this.board_),
+      new Stone(middle_x, -1, this.color_, this.board_),
+    ];
   }
 
   getRowSpan() {
@@ -40,7 +47,7 @@ export class IShape {
         if (!stone.canMove(0, 1)) {
           return false;
         }
-      };
+      }
     }
 
     for (let i = 3; i >= 0; --i) {

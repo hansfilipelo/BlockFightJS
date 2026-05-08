@@ -30,6 +30,10 @@ export class Board {
     return x_pos + (y_pos + 4) * this.board_width_;
   }
 
+  getMiddleX() {
+    return Math.floor(this.board_width_ / 2);
+  }
+
   getStone(x_pos, y_pos) {
     return this.stones_[this.getIndex(x_pos, y_pos)];
   }
@@ -52,6 +56,14 @@ export class Board {
 
     this.stones_[this.getIndex(new_x_pos, new_y_pos)] =
         this.stones_[this.getIndex(x_pos, y_pos)];
+    this.stones_[this.getIndex(x_pos, y_pos)] = null;
+  }
+
+  removeStone(stone) {
+    const x_pos = stone.x_pos();
+    const y_pos = stone.y_pos();
+    const internal_stone = this.getStone(x_pos, y_pos);
+    console.assert(internal_stone === stone, "Stone is not on the board");
     this.stones_[this.getIndex(x_pos, y_pos)] = null;
   }
 
@@ -94,5 +106,16 @@ export class Board {
     }
 
     return rows_to_clear.length;
+  }
+
+  log() {
+    let all_str = "";
+    for (let y = this.height() + 3; y >= 0; --y) {
+      for (let x = 0; x < this.width(); ++x) {
+        all_str += this.hasStone(x, y) ? "X" : "-";
+      }
+      all_str += "\n";
+    }
+    console.log(all_str);
   }
 }
