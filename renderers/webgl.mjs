@@ -133,11 +133,11 @@ class WebGLRenderer {
 
     if (this.is_preview_renderer_) {
       this.outline_v_ = this.is_dark_mode_ ? 0.0 : 1.0;
-      this.stone_outline_v_ = this.is_dark_mode_ ? 0.5 : 0.0;
+      this.stone_outline_v_ = this.is_dark_mode_ ? 0.7 : 0.0;
       this.bg_v_ = this.is_dark_mode_ ? 0.0 : 1.0;
     } else {
-      this.outline_v_ = this.is_dark_mode_ ? 0.5 : 0.0;
-      this.stone_outline_v_ = this.outline_v_
+      this.outline_v_ = this.is_dark_mode_ ? 1.0 : 0.0;
+      this.stone_outline_v_= this.is_dark_mode_ ? 0.6 : 0.0;
       this.bg_v_ = this.is_dark_mode_ ? 0.15 : 0.95;
     }
 
