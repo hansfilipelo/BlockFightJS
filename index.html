@@ -6,7 +6,7 @@
   <script type="module">
     let game = null;
     import('./main.mjs').then(block_fight => {
-      import('./player_info_controller.mjs').then(player_info_controller => {
+      import('./src/player_info_controller.mjs').then(player_info_controller => {
         block_fight.run(
           new player_info_controller.PlayerInfoController(
             document.getElementById("overlay"),
