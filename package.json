@@ -4,7 +4,7 @@
   "type": "module",
   "packageManager": "bun@1.3.13",
   "scripts": {
-    "build": "sh -c 'OUTDIR=${1:-dist}; mkdir -p \"$OUTDIR\" && bun build ./main.mjs --outdir \"$OUTDIR\" --target browser --format esm --minify && cp index.html blockfight.css \"$OUTDIR\"/' --",
+    "build": "sh -c 'OUTDIR=${1:-dist}; mkdir -p \"$OUTDIR\" && bun build ./main.mjs --outfile \"$OUTDIR/main.mjs\" --target browser --format esm --minify && cp index.html blockfight.css \"$OUTDIR\"/' --",
     "test": "bun test"
   }
 }
