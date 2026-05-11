@@ -1,8 +1,8 @@
-import { Board } from "./board.mjs"
-import { BOARD_HEIGHT, BOARD_WIDTH, PREVIEW_SIZE } from "./game_state.mjs"
-import { createInputHandler } from "./input.mjs"
-import { Player } from "./player.mjs"
-import { createRenderer } from "./renderer.mjs"
+import { Board } from "./src/board.mjs"
+import { BOARD_HEIGHT, BOARD_WIDTH, PREVIEW_SIZE } from "./src/game_state.mjs"
+import { createInputHandler } from "./src/input.mjs"
+import { Player } from "./src/player.mjs"
+import { createRenderer } from "./src/renderer.mjs"
 
 export async function run(player_info_controller, game_canvas, preview_canvas) {
   const urlParams = new URLSearchParams(window.location.search);
