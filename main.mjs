@@ -2,6 +2,7 @@ import { Board } from "./src/board.mjs"
 import { BOARD_HEIGHT, BOARD_WIDTH, PREVIEW_SIZE } from "./src/game_state.mjs"
 import { createInputHandler } from "./src/input.mjs"
 import { Player } from "./src/player.mjs"
+import { PlayerInfoController } from "./src/player_info_controller.mjs"
 import { createRenderer } from "./src/renderer.mjs"
 
 export async function run(player_info_controller, game_canvas, preview_canvas) {
@@ -39,4 +40,13 @@ export async function run(player_info_controller, game_canvas, preview_canvas) {
     preview_renderer,
     input_handler
   };
+}
+
+export async function start() {
+  return await run(
+    new PlayerInfoController(
+      document.getElementById("overlay"),
+      document.getElementById("sidebar")),
+    document.getElementById("game_canvas"),
+    document.getElementById("preview_canvas"));
 }

@@ -6,15 +6,8 @@
   <script type="module">
     let game = null;
     import('./main.mjs').then(block_fight => {
-      import('./src/player_info_controller.mjs').then(player_info_controller => {
-        block_fight.run(
-          new player_info_controller.PlayerInfoController(
-            document.getElementById("overlay"),
-            document.getElementById("sidebar")),
-          document.getElementById("game_canvas"),
-          document.getElementById("preview_canvas")).then(game_out => {
-              game = game_out;
-        });
+      block_fight.start().then(game_out => {
+        game = game_out;
       });
     });
   </script>
