@@ -13,3 +13,9 @@ minimizing the code for deployment.
 bun test
 ```
 
+## Minifying for deployment
+
+```bash
+bun run build PATH/TO/DEPLOY/FOLDER
+```
+
