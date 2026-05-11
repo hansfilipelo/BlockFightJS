@@ -27,6 +27,10 @@ body {
   overflow: hidden;
 }
 
+body.compact-sidebar-active {
+  align-items: flex-start;
+}
+
 * {
   box-sizing: border-box;
 }
@@ -51,12 +55,23 @@ body {
   aspect-ratio: 1;
 }
 
+#preview_text {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  min-height: clamp(1.8rem, 6vmin, 2.8rem);
+  font-size: clamp(1.8rem, 6vmin, 2.8rem);
+  font-weight: 700;
+  line-height: 1;
+}
+
 #sidebar {
   width: calc(var(--layout-height) * 0.25);
   max-width: calc(var(--layout-height) * 0.25);
   display: flex;
   flex-direction: column;
   gap: clamp(0.75rem, 2vmin, 1rem);
+  flex: 0 0 auto;
 }
 
 #board {
@@ -101,6 +116,91 @@ body {
 #level_value {
   font-size: clamp(1.8rem, 5vmin, 2.6rem);
   font-weight: 700;
+  line-height: 1;
+}
+
+#layout.compact-sidebar {
+  --outer-padding-inline: 0;
+  --layout-gap: 0;
+  --compact-row-height: clamp(1.15rem, 3.4vmin, 1.45rem);
+  flex-direction: column;
+  padding-inline: 0;
+  gap: 0;
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+}
+
+#layout.compact-sidebar #sidebar,
+#layout.compact-sidebar #board {
+  width: 100%;
+}
+
+#layout.compact-sidebar #sidebar {
+  max-width: none;
+  height: var(--compact-row-height);
+  min-height: 0;
+  flex: 0 0 var(--compact-row-height);
+  flex-direction: row;
+  align-items: stretch;
+  gap: 0;
+}
+
+#layout.compact-sidebar #board {
+  flex: 1 1 0;
+  min-height: 0;
+  height: auto;
+}
+
+#layout.compact-sidebar .sidebar_panel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1 1 0;
+  height: 100%;
+  min-width: 0;
+  padding: 0 clamp(0.04rem, 0.12vmin, 0.1rem);
+  gap: clamp(0.03rem, 0.12vmin, 0.08rem);
+  border-radius: 0;
+  box-shadow: none;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+#layout.compact-sidebar #preview,
+#layout.compact-sidebar .sidebar_stat {
+  flex-direction: row;
+}
+
+#layout.compact-sidebar #preview {
+  gap: clamp(0.03rem, 0.12vmin, 0.08rem);
+}
+
+#layout.compact-sidebar #preview_container {
+  display: none;
+}
+
+#layout.compact-sidebar #preview_text {
+  display: block;
+  min-height: 0;
+}
+
+#layout.compact-sidebar .sidebar_heading {
+  font-size: clamp(0.68rem, 1.5vmin, 0.84rem);
+  font-weight: 700;
+  letter-spacing: 0;
+  text-transform: none;
+  line-height: 1;
+}
+
+#layout.compact-sidebar .sidebar_heading::after {
+  content: ":";
+}
+
+#layout.compact-sidebar #preview_text,
+#layout.compact-sidebar #score_value,
+#layout.compact-sidebar #level_value {
+  font-size: clamp(0.9rem, 2.05vmin, 1.08rem);
   line-height: 1;
 }
 

@@ -8,6 +8,15 @@ import { TShape } from "./shapes/t_shape.mjs"
 
 
 const ALL_SHAPES = [IShape, SShape, ZShape, OShape, LShape, JShape, TShape];
+const SHAPE_LABELS = new Map([
+  [IShape, "I"],
+  [SShape, "S"],
+  [ZShape, "Z"],
+  [OShape, "O"],
+  [LShape, "L"],
+  [JShape, "J"],
+  [TShape, "T"],
+]);
 
 
 export function randomShapeClass() {
@@ -35,6 +44,10 @@ class GenericShape {
     this.board_ = board;
     this.shape_.newStones(this.board_);
     return true;
+  }
+
+  getLabel() {
+    return getShapeLabel(this.shape_class_);
   }
 
   getRowSpan() {
@@ -66,6 +79,12 @@ class GenericShape {
     return this.shape_.right();
   }
 };
+
+export function getShapeLabel(shape_class) {
+  const label = SHAPE_LABELS.get(shape_class);
+  console.assert(label, "Missing shape label");
+  return label;
+}
 
 export function newShape(board) {
   const shape_class = randomShapeClass();

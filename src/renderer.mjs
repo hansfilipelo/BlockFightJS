@@ -33,6 +33,12 @@ export async function createRenderer(board,
   window.addEventListener("resize", () => {
     renderer.onResize();
   });
+  if (window.ResizeObserver) {
+    const resize_target = game_canvas.parentElement || game_canvas;
+    new window.ResizeObserver(() => {
+      renderer.onResize();
+    }).observe(resize_target);
+  }
 
   return renderer;
 }

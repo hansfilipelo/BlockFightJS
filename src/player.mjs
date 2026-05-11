@@ -17,7 +17,9 @@ export class Player {
 
     this.preview_board_ = preview_board;
     this.preview_renderer_ = preview_renderer;
+    this.preview_renderer_full_ = preview_renderer;
     this.preview_shape_ = null;
+    this.is_compact_sidebar_ = false;
 
     this.level_ = 1;
     this.n_drops_on_level_ = 0;
@@ -41,6 +43,9 @@ export class Player {
     this.player_info_controller_.setNewPlayerCallback(() => {
       this.reset();
       this.drawGame();
+    });
+    this.player_info_controller_.setCompactSidebarCallback((is_compact_sidebar) => {
+      this.setCompactSidebarMode(is_compact_sidebar);
     });
     this.drawGame();
     this.clearPreview();
@@ -151,7 +156,10 @@ export class Player {
     for (let i = 0; i < 4; ++i) {
       console.assert(this.preview_shape_.drop());
     }
-    this.preview_renderer_.draw();
+    this.player_info_controller_.setPreviewShape(this.preview_shape_.getLabel());
+    if (this.preview_renderer_) {
+      this.preview_renderer_.draw();
+    }
 
     return true;
   }
@@ -159,7 +167,29 @@ export class Player {
   clearPreview() {
     if (!this.preview_board_) return;
     this.preview_board_.newStones();
-    this.preview_renderer_.draw();
+    this.player_info_controller_.setPreviewShape("");
+    if (this.preview_renderer_) {
+      this.preview_renderer_.draw();
+    }
+  }
+
+  setCompactSidebarMode(is_compact_sidebar) {
+    if (this.is_compact_sidebar_ === is_compact_sidebar) {
+      return;
+    }
+
+    this.is_compact_sidebar_ = is_compact_sidebar;
+    this.preview_renderer_ = is_compact_sidebar ? null : this.preview_renderer_full_;
+
+    if (this.preview_shape_) {
+      this.player_info_controller_.setPreviewShape(this.preview_shape_.getLabel());
+    } else {
+      this.player_info_controller_.setPreviewShape("");
+    }
+
+    if (this.preview_renderer_) {
+      this.preview_renderer_.draw();
+    }
   }
 
   drop(reload_timer) {

@@ -82,4 +82,26 @@ describe("Player", () => {
       expect(player_info.level_updates_.at(-1)).toBe(2);
     }));
   });
+
+  test("compact sidebar swaps the preview canvas for a shape label", () => {
+    withMockedTimers(() => withMockedRandom([0.5, 0.5], () => {
+      const { preview_renderer, player_info, player } = createPlayer();
+
+      player.start("Ada");
+      const preview_draw_count = preview_renderer.draw_calls_.length;
+
+      expect(player_info.preview_shape_updates_.at(-1)).toBe("O");
+
+      player.setCompactSidebarMode(true);
+      expect(player.preview_renderer_).toBeNull();
+
+      player.clearPreview();
+      expect(preview_renderer.draw_calls_).toHaveLength(preview_draw_count);
+      expect(player_info.preview_shape_updates_.at(-1)).toBe("");
+
+      player.setCompactSidebarMode(false);
+      expect(player.preview_renderer_).toBe(preview_renderer);
+      expect(preview_renderer.draw_calls_.length).toBe(preview_draw_count + 1);
+    }));
+  });
 });

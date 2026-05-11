@@ -45,8 +45,10 @@ export async function run(player_info_controller, game_canvas, preview_canvas) {
 export async function start() {
   return await run(
     new PlayerInfoController(
+      document.getElementById("layout"),
       document.getElementById("overlay"),
-      document.getElementById("sidebar")),
+      document.getElementById("sidebar"),
+      window),
     document.getElementById("game_canvas"),
     document.getElementById("preview_canvas"));
 }

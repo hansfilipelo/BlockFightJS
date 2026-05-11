@@ -157,6 +157,8 @@ class WebGLRenderer {
     this.is_dark_mode_ = is_dark_mode;
     this.is_preview_renderer_ = is_preview_renderer;
 
+    this.ghost_stones_ = null;
+
     if (this.is_preview_renderer_) {
       this.outline_v_ = this.is_dark_mode_ ? 0.0 : 1.0;
       this.stone_outline_v_ = this.is_dark_mode_ ? 0.7 : 0.0;
@@ -251,10 +253,19 @@ class WebGLRenderer {
   // Internal helpers
   // -----------------------------------------------------------------------
 
+  getDisplaySize_() {
+    // const rect = this.game_canvas_.getBoundingClientRect();
+    return {
+      width: Math.max(0, this.game_canvas_.clientWidth),
+      height: Math.max(0, this.game_canvas_.clientHeight),
+    };
+  }
+
   syncCanvasSize_() {
     const dpr = window.devicePixelRatio || 1;
-    const display_w = this.game_canvas_.clientWidth;
-    const display_h = this.game_canvas_.clientHeight;
+    const display_size = this.getDisplaySize_();
+    const display_w = display_size.width;
+    const display_h = display_size.height;
     const buf_w = Math.round(display_w * dpr);
     const buf_h = Math.round(display_h * dpr);
 
@@ -267,8 +278,9 @@ class WebGLRenderer {
   }
 
   computeLayout_() {
-    const css_w = this.game_canvas_.clientWidth;
-    const css_h = this.game_canvas_.clientHeight;
+    const display_size = this.getDisplaySize_();
+    const css_w = display_size.width;
+    const css_h = display_size.height;
     const bw = this.board_.width();
     const bh = this.board_.height();
 
@@ -328,6 +340,8 @@ class WebGLRenderer {
   }
 
   drawGhost_(ghost_stones) {
+    this.ghost_stones_ = ghost_stones;
+
     if (this.is_preview_renderer_ || ghost_stones == null) {
       return;
     }
@@ -377,7 +391,7 @@ class WebGLRenderer {
   onResize() {
     this.syncCanvasSize_();
     this.computeLayout_();
-    this.draw();
+    this.draw(this.ghost_stones_);
   }
 
   draw(ghost_stones = null) {

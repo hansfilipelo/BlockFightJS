@@ -28,6 +28,8 @@ export class RecordingPlayerInfoController {
     this.menu_up_calls_ = 0;
     this.menu_down_calls_ = 0;
     this.menu_select_calls_ = 0;
+    this.preview_shape_updates_ = [];
+    this.compact_sidebar_callback_ = null;
   }
 
   setStartGameCallback(callback) {
@@ -44,6 +46,11 @@ export class RecordingPlayerInfoController {
 
   setNewPlayerCallback(callback) {
     this.new_player_callback_ = callback;
+  }
+
+  setCompactSidebarCallback(callback) {
+    this.compact_sidebar_callback_ = callback;
+    callback(false);
   }
 
   showPauseMenu() {
@@ -83,6 +90,10 @@ export class RecordingPlayerInfoController {
 
   setLevel(level) {
     this.level_updates_.push(level);
+  }
+
+  setPreviewShape(shape_label) {
+    this.preview_shape_updates_.push(shape_label);
   }
 }
 
