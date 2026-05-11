@@ -37,23 +37,37 @@ export class IShape {
     return [this.stones_[0].y_pos(), this.stones_[3].y_pos()];
   }
 
-  drop() {
+  canDrop(drop_attempt) {
     if (this.current_rotation_ === ROTATION.VERTICAL) {
-      if (!this.stones_[3].canMove(0, 1)) {
-        return false;
-      }
+      return this.stones_[3].canMove(0, drop_attempt);
     } else if (this.current_rotation_ === ROTATION.HORIZONTAL) {
       for (const stone of this.stones_) {
-        if (!stone.canMove(0, 1)) {
+        if (!stone.canMove(0, drop_attempt)) {
           return false;
         }
       }
+      return true;
+    }
+  }
+
+  drop() {
+    if (!this.canDrop(1)) {
+      return false;
     }
 
     for (let i = 3; i >= 0; --i) {
       this.stones_[i].move(0, 1);
     }
     return true;
+  }
+
+  getDropCount() {
+    let drop_attempt = 1;
+    while (this.canDrop(drop_attempt)) {
+      drop_attempt++;
+    }
+
+    return drop_attempt - 1;
   }
 
   rotate() {

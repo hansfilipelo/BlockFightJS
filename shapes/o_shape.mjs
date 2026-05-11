@@ -45,9 +45,13 @@ export class OShape {
     return span;
   }
 
+  canDrop(drop_attempt) {
+    return this.stones_[2].canMove(0, drop_attempt) &&
+           this.stones_[3].canMove(0, drop_attempt);
+  }
+
   drop() {
-    // Check bottom row stones (stones 2 and 3)
-    if (!this.stones_[2].canMove(0, 1) || !this.stones_[3].canMove(0, 1)) {
+    if (!this.canDrop(1)) {
       return false;
     }
 
@@ -58,6 +62,15 @@ export class OShape {
     this.stones_[1].move(0, 1);
 
     return true;
+  }
+
+  getDropCount() {
+    let drop_attempt = 1;
+    while (this.canDrop(drop_attempt)) {
+      drop_attempt++;
+    }
+
+    return drop_attempt - 1;
   }
 
   rotate() {

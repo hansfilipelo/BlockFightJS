@@ -32,5 +32,11 @@ export async function run(player_info_controller, game_canvas, preview_canvas) {
                           preview_board, preview_renderer);
   let input_handler = await createInputHandler(player, input_param);
 
-  return { player, board, renderer, input_handler };
+  return { player,
+    board,
+    renderer,
+    preview_board,
+    preview_renderer,
+    input_handler
+  };
 }
