@@ -134,12 +134,6 @@ export async function createInputHandler(player, platform=null) {
       module => module.default(input_interceptor));
   }
 
-
-  if (platform === "kaplay") {
-    return await import("./input/kaplay.mjs").then(
-      module => module.default(input_interceptor));
-  }
-
   if (platform === "javascript") {
     return await import("./input/javascript.mjs").then(
       module => module.default(input_interceptor));
