@@ -82,10 +82,26 @@ const FRAGMENT_SRC = `
 const GHOST_FRAGMENT_SRC = `
   precision mediump float;
 
-  uniform vec4 u_color;
+  uniform vec2 u_board_origin;
+  uniform float u_stone_size;
+  uniform float u_outline_size;
+  uniform float u_canvas_height;
+  uniform vec4 u_fill_color;
+  uniform vec4 u_outline_color;
 
   void main() {
-    gl_FragColor = u_color;
+    vec2 frag = vec2(gl_FragCoord.x, u_canvas_height - gl_FragCoord.y);
+    vec2 cell_pos = mod(frag - u_board_origin, u_stone_size);
+
+    if (cell_pos.x < u_outline_size ||
+        cell_pos.x > u_stone_size - u_outline_size ||
+        cell_pos.y < u_outline_size ||
+        cell_pos.y > u_stone_size - u_outline_size) {
+      gl_FragColor = u_outline_color;
+      return;
+    }
+
+    gl_FragColor = u_fill_color;
   }
 `;
 
@@ -190,8 +206,18 @@ class WebGLRenderer {
       gl.getAttribLocation(this.ghost_program_, "a_position");
     this.ghost_u_resolution_ =
       gl.getUniformLocation(this.ghost_program_, "u_resolution");
-    this.ghost_u_color_ =
-      gl.getUniformLocation(this.ghost_program_, "u_color");
+    this.ghost_u_board_origin_ =
+      gl.getUniformLocation(this.ghost_program_, "u_board_origin");
+    this.ghost_u_stone_size_ =
+      gl.getUniformLocation(this.ghost_program_, "u_stone_size");
+    this.ghost_u_outline_size_ =
+      gl.getUniformLocation(this.ghost_program_, "u_outline_size");
+    this.ghost_u_canvas_height_ =
+      gl.getUniformLocation(this.ghost_program_, "u_canvas_height");
+    this.ghost_u_fill_color_ =
+      gl.getUniformLocation(this.ghost_program_, "u_fill_color");
+    this.ghost_u_outline_color_ =
+      gl.getUniformLocation(this.ghost_program_, "u_outline_color");
 
     // Pre-allocate per-cell color data (RGBA, never reallocated)
     const bw = this.board_.width();
@@ -311,7 +337,6 @@ class WebGLRenderer {
       return;
     }
 
-    const ghost_color = ghost_stones[0].color;
     const gl = this.gl_;
     gl.useProgram(this.ghost_program_);
     gl.bindBuffer(gl.ARRAY_BUFFER, this.ghost_vertex_buffer_);
@@ -322,11 +347,23 @@ class WebGLRenderer {
     gl.enableVertexAttribArray(this.ghost_a_position_);
     gl.uniform2f(this.ghost_u_resolution_,
                  this.game_canvas_.width, this.game_canvas_.height);
-    gl.uniform4f(this.ghost_u_color_,
-                 ghost_color.r_ / 255,
-                 ghost_color.g_ / 255,
-                 ghost_color.b_ / 255,
-                 0.4);
+    gl.uniform2f(this.ghost_u_board_origin_,
+                 this.x_start_ * this.dpr_, this.y_start_ * this.dpr_);
+    gl.uniform1f(this.ghost_u_stone_size_, this.stone_size_ * this.dpr_);
+    gl.uniform1f(this.ghost_u_outline_size_, OUTLINE_SIZE * this.dpr_);
+    gl.uniform1f(this.ghost_u_canvas_height_, this.game_canvas_.height);
+    const ghost_fill_color = this.is_dark_mode_ ? 0.5 : 0.2;
+    gl.uniform4f(this.ghost_u_fill_color_,
+                 ghost_fill_color,
+                 ghost_fill_color,
+                 ghost_fill_color,
+                 0.35);
+    const ghost_outline_color = this.is_dark_mode_ ? 0.65 : 0.1;
+    gl.uniform4f(this.ghost_u_outline_color_,
+                 ghost_outline_color,
+                 ghost_outline_color,
+                 ghost_outline_color,
+                 0.55);
     gl.enable(gl.BLEND);
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
     gl.drawArrays(gl.TRIANGLES, 0, n_vertices);
