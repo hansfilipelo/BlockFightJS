@@ -130,14 +130,9 @@ export async function createInputHandler(player, platform=null) {
   let input_interceptor = new InputInterceptor(player);
 
   if (!platform) {
-    return await import("./input/javascript.mjs").then(
-      module => module.default(input_interceptor));
+    platform = "javascript";
   }
 
-  if (platform === "javascript") {
-    return await import("./input/javascript.mjs").then(
-      module => module.default(input_interceptor));
-  }
-
-  return null;
+  return await import("./input/" + platform + ".mjs").then(
+    module => module.default(input_interceptor));
 }
