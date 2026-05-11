@@ -1,4 +1,12 @@
 
+import * as dummy_input from "./input/dummy.mjs"
+import * as javascript_input from "./input/javascript.mjs"
+
+const INPUT_HANDLER_MODULES = {
+  dummy: dummy_input,
+  javascript: javascript_input,
+};
+
 const STICKY_KEY_INTERVAL = 250;
 
 class InputInterceptor {
@@ -133,6 +141,10 @@ export async function createInputHandler(player, platform=null) {
     platform = "javascript";
   }
 
-  return await import("./input/" + platform + ".mjs").then(
-    module => module.default(input_interceptor));
+  const input_handler_module = INPUT_HANDLER_MODULES[platform];
+  if (!input_handler_module) {
+    throw new Error("Unknown input platform: " + platform);
+  }
+
+  return input_handler_module.createInputHandler(input_interceptor);
 }

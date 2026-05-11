@@ -11,6 +11,11 @@ class DummyRenderer {
   draw(ghost_stones = null) {}
 }
 
-export default function (board, game_canvas, is_dark_mode, is_preview_renderer) {
+export function createRenderer(board,
+                               game_canvas,
+                               is_dark_mode,
+                               is_preview_renderer) {
   return new DummyRenderer(board, game_canvas, is_dark_mode, is_preview_renderer);
 }
+
+export default createRenderer;

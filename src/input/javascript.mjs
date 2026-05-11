@@ -61,6 +61,8 @@ class JavascriptInputHandler {
   }
 }
 
-export default function (input_interceptor) {
+export function createInputHandler(input_interceptor) {
   return new JavascriptInputHandler(input_interceptor);
 }
+
+export default createInputHandler;
