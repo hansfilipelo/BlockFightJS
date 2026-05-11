@@ -79,6 +79,16 @@ const FRAGMENT_SRC = `
   }
 `;
 
+const GHOST_FRAGMENT_SRC = `
+  precision mediump float;
+
+  uniform vec4 u_color;
+
+  void main() {
+    gl_FragColor = u_color;
+  }
+`;
+
 // ---------------------------------------------------------------------------
 // GL helpers
 // ---------------------------------------------------------------------------
@@ -155,6 +165,7 @@ class WebGLRenderer {
 
     // Build shader program and cache locations
     this.program_ = createProgram(gl, VERTEX_SRC, FRAGMENT_SRC);
+    this.ghost_program_ = createProgram(gl, VERTEX_SRC, GHOST_FRAGMENT_SRC);
 
     this.a_position_ = gl.getAttribLocation(this.program_, "a_position");
     this.u_resolution_ = gl.getUniformLocation(this.program_, "u_resolution");
@@ -175,6 +186,12 @@ class WebGLRenderer {
       gl.getUniformLocation(this.program_, "u_column_line_color");
     this.u_canvas_height_ =
       gl.getUniformLocation(this.program_, "u_canvas_height");
+    this.ghost_a_position_ =
+      gl.getAttribLocation(this.ghost_program_, "a_position");
+    this.ghost_u_resolution_ =
+      gl.getUniformLocation(this.ghost_program_, "u_resolution");
+    this.ghost_u_color_ =
+      gl.getUniformLocation(this.ghost_program_, "u_color");
 
     // Pre-allocate per-cell color data (RGBA, never reallocated)
     const bw = this.board_.width();
@@ -194,6 +211,8 @@ class WebGLRenderer {
     // Pre-allocate board quad vertex buffer (6 verts × 2 floats)
     this.vertex_buffer_ = gl.createBuffer();
     this.quad_vertices_ = new Float32Array(12);
+    this.ghost_vertex_buffer_ = gl.createBuffer();
+    this.ghost_vertices_ = new Float32Array(4 * 12);
 
     // Sync canvas backing size with its CSS layout size
     this.syncCanvasSize_();
@@ -251,6 +270,69 @@ class WebGLRenderer {
     gl.bufferData(gl.ARRAY_BUFFER, v, gl.STATIC_DRAW);
   }
 
+  updateGhostVertices_(ghost_stones) {
+    const dpr = this.dpr_;
+    const stone_size = this.stone_size_ * dpr;
+    const vertices = this.ghost_vertices_;
+    let offset = 0;
+
+    for (const ghost_stone of ghost_stones) {
+      if (ghost_stone.y_pos < 0) {
+        continue;
+      }
+
+      const px = (this.x_start_ + ghost_stone.x_pos * this.stone_size_) * dpr;
+      const py = (this.y_start_ + ghost_stone.y_pos * this.stone_size_) * dpr;
+
+      vertices[offset++] = px;
+      vertices[offset++] = py;
+      vertices[offset++] = px + stone_size;
+      vertices[offset++] = py;
+      vertices[offset++] = px;
+      vertices[offset++] = py + stone_size;
+      vertices[offset++] = px;
+      vertices[offset++] = py + stone_size;
+      vertices[offset++] = px + stone_size;
+      vertices[offset++] = py;
+      vertices[offset++] = px + stone_size;
+      vertices[offset++] = py + stone_size;
+    }
+
+    return offset / 2;
+  }
+
+  drawGhost_(ghost_stones) {
+    if (this.is_preview_renderer_ || ghost_stones == null) {
+      return;
+    }
+
+    const n_vertices = this.updateGhostVertices_(ghost_stones);
+    if (n_vertices === 0) {
+      return;
+    }
+
+    const ghost_color = ghost_stones[0].color;
+    const gl = this.gl_;
+    gl.useProgram(this.ghost_program_);
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.ghost_vertex_buffer_);
+    gl.bufferData(gl.ARRAY_BUFFER,
+                  this.ghost_vertices_.subarray(0, n_vertices * 2),
+                  gl.STREAM_DRAW);
+    gl.vertexAttribPointer(this.ghost_a_position_, 2, gl.FLOAT, false, 0, 0);
+    gl.enableVertexAttribArray(this.ghost_a_position_);
+    gl.uniform2f(this.ghost_u_resolution_,
+                 this.game_canvas_.width, this.game_canvas_.height);
+    gl.uniform4f(this.ghost_u_color_,
+                 ghost_color.r_ / 255,
+                 ghost_color.g_ / 255,
+                 ghost_color.b_ / 255,
+                 0.4);
+    gl.enable(gl.BLEND);
+    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+    gl.drawArrays(gl.TRIANGLES, 0, n_vertices);
+    gl.disable(gl.BLEND);
+  }
+
   // -----------------------------------------------------------------------
   // Public API (matches KaplayRenderer)
   // -----------------------------------------------------------------------
@@ -261,7 +343,7 @@ class WebGLRenderer {
     this.draw();
   }
 
-  draw() {
+  draw(ghost_stones = null) {
     const gl = this.gl_;
     const dpr = this.dpr_;
     const bw = this.board_.width();
@@ -333,6 +415,7 @@ class WebGLRenderer {
     gl.enableVertexAttribArray(this.a_position_);
 
     gl.drawArrays(gl.TRIANGLES, 0, 6);
+    this.drawGhost_(ghost_stones);
   }
 }
 

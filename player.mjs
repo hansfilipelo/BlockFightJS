@@ -40,10 +40,18 @@ export class Player {
     });
     this.player_info_controller_.setNewPlayerCallback(() => {
       this.reset();
-      this.renderer_.draw();
+      this.drawGame();
     });
-    this.renderer_.draw();
+    this.drawGame();
     this.clearPreview();
+  }
+
+  drawGame() {
+    let ghost_stones = null;
+    if (this.current_shape_) {
+      ghost_stones = this.current_shape_.getGhostStones();
+    }
+    this.renderer_.draw(ghost_stones);
   }
 
   reloadTimer() {
@@ -87,7 +95,7 @@ export class Player {
     this.player_info_controller_.setScore(this.score_);
     this.player_info_controller_.hideOverlay();
 
-    this.renderer_.draw();
+    this.drawGame();
     this.reloadTimer();
   }
 
@@ -171,7 +179,7 @@ export class Player {
       this.is_playing_ = this.newShape();
     }
 
-    this.renderer_.draw();
+    this.drawGame();
 
     if (this.is_playing_ && reload_timer) {
       this.reloadTimer();
@@ -184,7 +192,7 @@ export class Player {
     }
 
     this.current_shape_.rotate();
-    this.renderer_.draw();
+    this.drawGame();
   }
 
   left() {
@@ -193,7 +201,7 @@ export class Player {
     }
 
     this.current_shape_.left();
-    this.renderer_.draw();
+    this.drawGame();
   }
 
   right() {
@@ -202,7 +210,7 @@ export class Player {
     }
 
     this.current_shape_.right();
-    this.renderer_.draw();
+    this.drawGame();
   }
 
   dropAllTheWay() {
@@ -217,7 +225,7 @@ export class Player {
     this.addScore(this.board_.clearFullRows(
       this.current_shape_.getRowSpan()) * SCORE_PER_ROW);
     this.is_playing_ = this.newShape();
-    this.renderer_.draw();
+    this.drawGame();
   }
 
   // -----------------------------------------------------------------------

@@ -46,23 +46,28 @@ export class ZShape {
     return span;
   }
 
-  drop() {
+  canDrop(drop_attempt) {
     if (this.current_rotation_ === ROTATION.Z_ORIENTATION) {
-      if (!this.stones_[0].canMove(0, 1) ||
-          !this.stones_[2].canMove(0, 1) ||
-          !this.stones_[3].canMove(0, 1)) {
-        return false;
-      }
+      return this.stones_[0].canMove(0, drop_attempt) &&
+             this.stones_[2].canMove(0, drop_attempt) &&
+             this.stones_[3].canMove(0, drop_attempt);
+    } else if (this.current_rotation_ === ROTATION.ALTERNATE) {
+      return this.stones_[1].canMove(0, drop_attempt) &&
+             this.stones_[3].canMove(0, drop_attempt);
+    }
+  }
 
+  drop() {
+    if (!this.canDrop(1)) {
+      return false;
+    }
+
+    if (this.current_rotation_ === ROTATION.Z_ORIENTATION) {
       this.stones_[0].move(0, 1);
       this.stones_[2].move(0, 1);
       this.stones_[1].move(0, 1);
       this.stones_[3].move(0, 1);
     } else if (this.current_rotation_ === ROTATION.ALTERNATE) {
-      if (!this.stones_[1].canMove(0, 1) ||
-          !this.stones_[3].canMove(0, 1)) {
-        return false;
-      }
       this.stones_[1].move(0, 1);
       this.stones_[0].move(0, 1);
       this.stones_[3].move(0, 1);
@@ -70,6 +75,15 @@ export class ZShape {
     }
 
     return true;
+  }
+
+  getDropCount() {
+    let drop_attempt = 1;
+    while (this.canDrop(drop_attempt)) {
+      drop_attempt++;
+    }
+
+    return drop_attempt - 1;
   }
 
   rotate() {

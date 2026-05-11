@@ -41,6 +41,15 @@ class GenericShape {
     return this.shape_.getRowSpan();
   }
 
+  getGhostStones() {
+    const drop_count = this.shape_.getDropCount();
+    return this.shape_.stones_.map((stone) => ({
+      x_pos: stone.x_pos(),
+      y_pos: stone.y_pos() + drop_count,
+      color: stone.color(),
+    }));
+  }
+
   drop() {
     return this.shape_.drop();
   }

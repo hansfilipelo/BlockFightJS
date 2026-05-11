@@ -48,43 +48,45 @@ export class LShape {
     return span;
   }
 
-  drop() {
+  canDrop(drop_attempt) {
     if (this.current_rotation_ === ROTATION.DEFAULT) {
-      // Check bottom row stones (stones 2 and 3)
-      if (!this.stones_[2].canMove(0, 1) || !this.stones_[3].canMove(0, 1)) {
-        return false;
-      }
+      return this.stones_[2].canMove(0, drop_attempt) &&
+             this.stones_[3].canMove(0, drop_attempt);
+    } else if (this.current_rotation_ === ROTATION.ROTATED_90) {
+      return this.stones_[3].canMove(0, drop_attempt) &&
+             this.stones_[0].canMove(0, drop_attempt) &&
+             this.stones_[1].canMove(0, drop_attempt);
+    } else if (this.current_rotation_ === ROTATION.ROTATED_180) {
+      return this.stones_[0].canMove(0, drop_attempt) &&
+             this.stones_[3].canMove(0, drop_attempt);
+    } else if (this.current_rotation_ === ROTATION.ROTATED_270) {
+      return this.stones_[0].canMove(0, drop_attempt) &&
+             this.stones_[1].canMove(0, drop_attempt) &&
+             this.stones_[2].canMove(0, drop_attempt);
+    }
+  }
+
+  drop() {
+    if (!this.canDrop(1)) {
+      return false;
+    }
+
+    if (this.current_rotation_ === ROTATION.DEFAULT) {
       this.stones_[2].move(0, 1);
       this.stones_[3].move(0, 1);
       this.stones_[1].move(0, 1);
       this.stones_[0].move(0, 1);
     } else if (this.current_rotation_ === ROTATION.ROTATED_90) {
-      // Check bottom stone (stone 3)
-      if (!this.stones_[3].canMove(0, 1) || 
-          !this.stones_[0].canMove(0, 1) || 
-          !this.stones_[1].canMove(0, 1)) {
-        return false;
-      }
       this.stones_[3].move(0, 1);
       this.stones_[0].move(0, 1);
       this.stones_[1].move(0, 1);
       this.stones_[2].move(0, 1);
     } else if (this.current_rotation_ === ROTATION.ROTATED_180) {
-      // Check bottom row stones (stones 0 and 1)
-      if (!this.stones_[0].canMove(0, 1) || !this.stones_[3].canMove(0, 1)) {
-        return false;
-      }
       this.stones_[0].move(0, 1);
       this.stones_[1].move(0, 1);
       this.stones_[2].move(0, 1);
       this.stones_[3].move(0, 1);
     } else if (this.current_rotation_ === ROTATION.ROTATED_270) {
-      // Check bottom row stones (stones 2 and 3)
-      if (!this.stones_[0].canMove(0, 1) ||
-          !this.stones_[1].canMove(0, 1) ||
-          !this.stones_[2].canMove(0, 1)) {
-        return false;
-      }
       this.stones_[0].move(0, 1);
       this.stones_[1].move(0, 1);
       this.stones_[2].move(0, 1);
@@ -92,6 +94,15 @@ export class LShape {
     }
 
     return true;
+  }
+
+  getDropCount() {
+    let drop_attempt = 1;
+    while (this.canDrop(drop_attempt)) {
+      drop_attempt++;
+    }
+
+    return drop_attempt - 1;
   }
 
   rotate() {
